@@ -2,6 +2,7 @@ package provOSM;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -47,44 +48,84 @@ public class FileCleaner {
 	 * 
 	 * @return boolean
 	 */
-	public boolean cleanFile() {
+	public boolean extractWays() {
+		Map<String, String> attributeKeysValues;
+		Map<String, String> tags;
+		String[] nodes;
+		ArrayList<String> nodeList = new ArrayList<String>();
+		
 
 		try {
 
-			while (mXMLEventReader.hasNext()) {
+			while (mXMLEventReader.hasNext() ) {// keep pulling events from the parser and while there is one
+															// to pull
 				XMLEvent event = mXMLEventReader.nextEvent();
 
-				switch (event.getEventType()) {
-
-				case XMLStreamConstants.START_ELEMENT:
+				// ....check if it is a start element (opening tag)
+				if (event.getEventType() == XMLStreamConstants.START_ELEMENT) {
 
 					StartElement startElement = event.asStartElement();
 					String qName = startElement.getName().toString();
 
-					// if the element is a Way we need to get its attributes
+					// if the element is a Way we need to get its attributes and process it
 					if (qName.equals("way")) {
-						// make a map to store the attributes
-						Map<String, String> attributeKeysValues = new HashMap<String, String>();
+						// make a new empty insance of the hashmap to store the attributes
+						attributeKeysValues = new HashMap<String, String>();
+						// make a new list of node ids
+						nodeList = new ArrayList<String>();
 
-						// get each attribute (for each attribute in the collection returned by the start element...
+						// get each attribute (for each attribute in the collection returned by the
+						// start element...
 						for (Iterator<Attribute> attributes = startElement.getAttributes(); attributes.hasNext();) {
-							Attribute a = attributes.next();//grab it into 'a'...
+							Attribute a = attributes.next();// grab it into 'a'...
 							// ...then store it in the map
 							attributeKeysValues.put(a.getName().toString(), a.getValue());
 							ctr++;
 						}
-
-						// System.out.println(attr);
+						
 
 					}
+					// if the element is not an opening tag then check if it is a member node,
+
+					else if (qName.equals("nd")) {
+						for (Iterator<Attribute> NodeAttributes = startElement.getAttributes(); NodeAttributes
+								.hasNext();) {
+							Attribute nd = NodeAttributes.next();
+
+							nodeList.add(nd.getValue());
+						} // end for
+						
+					} 
+					// if the element is not a member node then it should be a tag
+					// because of vaguaries of OSM data mdel we will check
+					else if (qName.equals("tag")) {
+						for (Iterator<Attribute> NodeAttributes = startElement.getAttributes(); NodeAttributes
+								.hasNext();) {
+							Attribute tg = NodeAttributes.next();
+
+							//tags.put(tg.getName().toString(), tg.getValue());
+						} // end for
+						
+					} 
 					
-					else if (true) {
-
-					}
-
-					break;
+					
+					
 
 				}
+				// if we reached the end of a  way element
+				else if (event.getEventType() == XMLStreamConstants.END_ELEMENT
+						&& event.asEndElement().getName().toString().equals("way")) { 
+//					String changeSet=attributeKeysValues.get("changeset");
+//					String uid = attributeKeysValues.get("uid");
+//					String userName = attributeKeysValues.get("user");
+//					String timeStamp = attributeKeysValues.get("timestamp");
+//					String version = attributeKeysValues.get("version");
+//					Map<String> tags = attributeKeysValues.get("tags");
+//					String nodes = attributeKeysValues.get("nodes");
+//					
+//					OSM_Way way=new OSM_Way(changeSet, uid, userName, timeStamp, version, tags, nodes);
+
+				} 
 
 			}
 
@@ -92,9 +133,10 @@ public class FileCleaner {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(ctr);
+		// System.out.println(nodeList.toArray()[2]);
+
 		return true;
 
-	}
+	}// end of cleanFile()
 
 }

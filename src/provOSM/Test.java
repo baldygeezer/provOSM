@@ -32,7 +32,7 @@ private final Namespace mNs;
 		
 		FileCleaner ploppy=new FileCleaner("ptwdMiniTest.osm", "wibble");
 		
-		ploppy.cleanFile();
+		ploppy.extractWays();
 		// TODO Auto-generated method stub
 
 	}
