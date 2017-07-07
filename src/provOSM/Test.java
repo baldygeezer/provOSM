@@ -1,6 +1,9 @@
 package provOSM;
 
 import org.openprovenance.prov.model.*;
+
+import java.util.ArrayList;
+
 import org.openprovenance.prov.interop.*;
 
 
@@ -29,11 +32,13 @@ private final Namespace mNs;
 	
 
 	public static void main(String[] args) {
-		
+		ArrayList<OSM_Way>ways; //=new ArrayList<OSM_Way>();
 		FileCleaner ploppy=new FileCleaner("ptwdMiniTest.osm", "wibble");
 		
-		ploppy.extractWays();
-		// TODO Auto-generated method stub
+		ways = ploppy.extractWays();
+		for (OSM_Way w :ways) {
+			System.out.println(w.getmUserName());
+		}
 
 	}
 

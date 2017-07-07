@@ -48,10 +48,11 @@ public class FileCleaner {
 	 * 
 	 * @return boolean
 	 */
-	public boolean extractWays() {
-		Map<String, String> attributeKeysValues; //store the Way's attributes
-		Map<String, String> tags= new HashMap<String, String>();//store the Tag's attributes
-		ArrayList<String> nodeList = new ArrayList<String>();//store the member node IDs
+	public ArrayList<OSM_Way> extractWays() {
+		Map<String, String> attributeKeysValues = new HashMap<String, String>(); // store the Way's attributes
+		Map<String, String> tags = new HashMap<String, String>();// store the Tag's attributes
+		ArrayList<String> nodeList = new ArrayList<String>();// store the member node IDs
+		ArrayList<OSM_Way> wayList = new ArrayList<OSM_Way>();
 
 		try {
 
@@ -72,7 +73,7 @@ public class FileCleaner {
 						// make a new list of node ids
 						nodeList = new ArrayList<String>();
 						// make a new HashMap for tags
-						tags= new HashMap<String, String>();
+						tags = new HashMap<String, String>();
 
 						// get each attribute (for each attribute in the collection returned by the
 						// start element...
@@ -103,7 +104,7 @@ public class FileCleaner {
 								.hasNext();) {
 							Attribute tg = NodeAttributes.next();
 
-							 tags.put(tg.getName().toString(), tg.getValue());
+							tags.put(tg.getName().toString(), tg.getValue());
 						} // end for
 
 					}
@@ -112,17 +113,17 @@ public class FileCleaner {
 				// if we reached the end of a way element
 				else if (event.getEventType() == XMLStreamConstants.END_ELEMENT
 						&& event.asEndElement().getName().toString().equals("way")) {
-					// String changeSet=attributeKeysValues.get("changeset");
-					// String uid = attributeKeysValues.get("uid");
-					// String userName = attributeKeysValues.get("user");
-					// String timeStamp = attributeKeysValues.get("timestamp");
-					// String version = attributeKeysValues.get("version");
-					// Map<String> tags = attributeKeysValues.get("tags");
-					// String nodes = attributeKeysValues.get("nodes");
-					//
-					// OSM_Way way=new OSM_Way(changeSet, uid, userName, timeStamp, version, tags,
-					// nodes);
+					String changeSet = attributeKeysValues.get("changeset");
+					String uid = attributeKeysValues.get("uid");
+					String userName = attributeKeysValues.get("user");
+					String timeStamp = attributeKeysValues.get("timestamp");
+					String version = attributeKeysValues.get("version");
 
+					String[] nodes = new String[nodeList.size()];
+					nodeList.toArray(nodes);
+
+					OSM_Way way = new OSM_Way(changeSet, uid, userName, timeStamp, version, tags, nodes);
+					wayList.add(way);
 				}
 
 			}
@@ -133,8 +134,8 @@ public class FileCleaner {
 		}
 		// System.out.println(nodeList.toArray()[2]);
 
-		return true;
+		return wayList;
 
-	}// end of cleanFile()
+	}// end of method
 
 }
