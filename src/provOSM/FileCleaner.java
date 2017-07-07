@@ -20,7 +20,7 @@ public class FileCleaner {
 	private XMLEventReader mXMLEventReader;
 	private String mInputFile;
 	private String mOutPutFile;
-	private final String OSMDATAPATH = "/home/baldy/Documents/OSMData/";
+	private final String OSMDATAPATH = "data/";
 
 	public FileCleaner(String mInputFile, String mOutPutFile) {
 
