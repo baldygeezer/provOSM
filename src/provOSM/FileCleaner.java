@@ -49,16 +49,14 @@ public class FileCleaner {
 	 * @return boolean
 	 */
 	public boolean extractWays() {
-		Map<String, String> attributeKeysValues;
-		Map<String, String> tags;
-		String[] nodes;
-		ArrayList<String> nodeList = new ArrayList<String>();
-		
+		Map<String, String> attributeKeysValues; //store the Way's attributes
+		Map<String, String> tags= new HashMap<String, String>();//store the Tag's attributes
+		ArrayList<String> nodeList = new ArrayList<String>();//store the member node IDs
 
 		try {
 
-			while (mXMLEventReader.hasNext() ) {// keep pulling events from the parser and while there is one
-															// to pull
+			while (mXMLEventReader.hasNext()) {// keep pulling events from the parser and while there is one
+												// to pull
 				XMLEvent event = mXMLEventReader.nextEvent();
 
 				// ....check if it is a start element (opening tag)
@@ -73,6 +71,8 @@ public class FileCleaner {
 						attributeKeysValues = new HashMap<String, String>();
 						// make a new list of node ids
 						nodeList = new ArrayList<String>();
+						// make a new HashMap for tags
+						tags= new HashMap<String, String>();
 
 						// get each attribute (for each attribute in the collection returned by the
 						// start element...
@@ -82,7 +82,6 @@ public class FileCleaner {
 							attributeKeysValues.put(a.getName().toString(), a.getValue());
 							ctr++;
 						}
-						
 
 					}
 					// if the element is not an opening tag then check if it is a member node,
@@ -94,38 +93,37 @@ public class FileCleaner {
 
 							nodeList.add(nd.getValue());
 						} // end for
-						
-					} 
+
+					}
 					// if the element is not a member node then it should be a tag
 					// because of vaguaries of OSM data mdel we will check
 					else if (qName.equals("tag")) {
+						// get each attribute
 						for (Iterator<Attribute> NodeAttributes = startElement.getAttributes(); NodeAttributes
 								.hasNext();) {
 							Attribute tg = NodeAttributes.next();
 
-							//tags.put(tg.getName().toString(), tg.getValue());
+							 tags.put(tg.getName().toString(), tg.getValue());
 						} // end for
-						
-					} 
-					
-					
-					
+
+					}
 
 				}
-				// if we reached the end of a  way element
+				// if we reached the end of a way element
 				else if (event.getEventType() == XMLStreamConstants.END_ELEMENT
-						&& event.asEndElement().getName().toString().equals("way")) { 
-//					String changeSet=attributeKeysValues.get("changeset");
-//					String uid = attributeKeysValues.get("uid");
-//					String userName = attributeKeysValues.get("user");
-//					String timeStamp = attributeKeysValues.get("timestamp");
-//					String version = attributeKeysValues.get("version");
-//					Map<String> tags = attributeKeysValues.get("tags");
-//					String nodes = attributeKeysValues.get("nodes");
-//					
-//					OSM_Way way=new OSM_Way(changeSet, uid, userName, timeStamp, version, tags, nodes);
+						&& event.asEndElement().getName().toString().equals("way")) {
+					// String changeSet=attributeKeysValues.get("changeset");
+					// String uid = attributeKeysValues.get("uid");
+					// String userName = attributeKeysValues.get("user");
+					// String timeStamp = attributeKeysValues.get("timestamp");
+					// String version = attributeKeysValues.get("version");
+					// Map<String> tags = attributeKeysValues.get("tags");
+					// String nodes = attributeKeysValues.get("nodes");
+					//
+					// OSM_Way way=new OSM_Way(changeSet, uid, userName, timeStamp, version, tags,
+					// nodes);
 
-				} 
+				}
 
 			}
 
