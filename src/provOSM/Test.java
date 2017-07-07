@@ -37,7 +37,7 @@ private final Namespace mNs;
 		
 		ways = ploppy.extractWays();
 		for (OSM_Way w :ways) {
-			System.out.println(w.getmUserName());
+			System.out.println(w.toString());
 		}
 
 	}

@@ -43,16 +43,18 @@ public class FileCleaner {
 	}
 
 	/**
-	 * at the moment this class strips out buildings i.e. way elements tagged as
-	 * building
+	 * method to return an ArrayList of OSMWay objects
 	 * 
-	 * @return boolean
+	 * @return ArrayList<OSM_Way>
 	 */
 	public ArrayList<OSM_Way> extractWays() {
 		Map<String, String> attributeKeysValues = new HashMap<String, String>(); // store the Way's attributes
-		Map<String, String> tags = new HashMap<String, String>();// store the Tag's attributes
+		//Map<String, String> tags = new HashMap<String, String>();// store the Tag's attributes
+		ArrayList<String> tags =new ArrayList<String>();
 		ArrayList<String> nodeList = new ArrayList<String>();// store the member node IDs
 		ArrayList<OSM_Way> wayList = new ArrayList<OSM_Way>();
+		boolean insideWayElement = false;
+		
 
 		try {
 
@@ -73,7 +75,7 @@ public class FileCleaner {
 						// make a new list of node ids
 						nodeList = new ArrayList<String>();
 						// make a new HashMap for tags
-						tags = new HashMap<String, String>();
+						 tags = new ArrayList<String>();
 
 						// get each attribute (for each attribute in the collection returned by the
 						// start element...
@@ -104,7 +106,7 @@ public class FileCleaner {
 								.hasNext();) {
 							Attribute tg = NodeAttributes.next();
 
-							tags.put(tg.getName().toString(), tg.getValue());
+							tags.add(tg.getName().toString() + " = "+ tg.getValue());
 						} // end for
 
 					}

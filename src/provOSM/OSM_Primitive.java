@@ -1,5 +1,7 @@
 package provOSM;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 
 public abstract class OSM_Primitive {
@@ -9,7 +11,7 @@ public abstract class OSM_Primitive {
 	private String mUserName;
 	private String mTimeStamp;
 	private String mVersion;
-	private Map<String, String> mTags;
+	private ArrayList<String> mTags;
 
 	public OSMDataType getmType() {
 		return mType;
@@ -35,7 +37,7 @@ public abstract class OSM_Primitive {
 		return mVersion;
 	}
 
-	public OSM_Primitive(OSMDataType type, String changeSet, String uid, String userName, String timeStamp, String version, Map<String, String> tags) {
+	public OSM_Primitive(OSMDataType type, String changeSet, String uid, String userName, String timeStamp, String version, ArrayList<String> tags) {
 		
 		this.mType = type;
 		this.mChangeSet = changeSet;
@@ -46,4 +48,29 @@ public abstract class OSM_Primitive {
 		this.mTags=tags;
 	}
 
+	@Override
+	public String toString() {
+		String wayString = "Username: "+ mUserName +", User ID: "+ mUid + ", Changeset: " + mChangeSet 
+				+ ", Timestamp: " + mTimeStamp + ", Version: " + mVersion + tagsToString();
+		
+		
+		
+		return wayString;
+	}
+	
+	
+	private String tagsToString(){
+		String tagString = " /n Tags \n ************************ \n";
+		
+		for (String s : mTags){
+			
+			tagString += s;
+			
+			
+		}
+		
+		tagString+="\n";
+		return tagString;
+	}
+	
 }
