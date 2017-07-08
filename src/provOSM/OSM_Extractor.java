@@ -128,7 +128,7 @@ public class OSM_Extractor {
 
 					OSM_Way way = new OSM_Way(changeSet, uid, userName, timeStamp, version, tags, nodes);
 					wayList.add(way);
-					insideWayElement = false;
+					insideWayElement = false;//set this to false to stop adding tags to the collection
 				}
 
 			}
@@ -144,6 +144,24 @@ public class OSM_Extractor {
 	}// end of method
 
 	
+	/**
+	 * Method to return all the ways
+	 * 
+	 * 
+	 * @return ArrayList<OSM_Way>
+	 */
+	
+	public ArrayList<OSM_Way> extractByTag(){
+		ArrayList<OSM_Way> buildinglist	 = new ArrayList<OSM_Way>();
+		ArrayList<OSM_Way> inputList = extractWays();
+		
+		//for ()
+		
+		return buildinglist;
+		
+		
+		
+	}
 	
 	
 	
