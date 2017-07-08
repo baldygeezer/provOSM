@@ -33,7 +33,7 @@ private final Namespace mNs;
 
 	public static void main(String[] args) {
 		ArrayList<OSM_Way>ways; //=new ArrayList<OSM_Way>();
-		FileCleaner ploppy=new FileCleaner("ptwdMiniTest.osm", "wibble");
+		OSM_Extractor ploppy=new OSM_Extractor("ptwdMiniTest.osm", "wibble");
 		
 		ways = ploppy.extractWays();
 		for (OSM_Way w :ways) {
