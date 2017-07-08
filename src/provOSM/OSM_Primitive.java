@@ -63,7 +63,7 @@ public abstract class OSM_Primitive {
 		String tagString = " /n Tags \n ************************ \n";
 		
 		for (String s : mTags){
-			
+			s += " ";
 			tagString += s;
 			
 			
