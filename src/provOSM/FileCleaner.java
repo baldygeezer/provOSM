@@ -26,7 +26,7 @@ public class FileCleaner {
 
 		ctr = 0;
 		try {
-
+            
 			this.mXMLInputFactory = XMLInputFactory.newFactory();
 			this.mXMLEventReader = mXMLInputFactory.createXMLEventReader(new FileReader(OSMDATAPATH + mInputFile));
 			this.mInputFile = mInputFile;
@@ -53,7 +53,7 @@ public class FileCleaner {
 		ArrayList<String> tags =new ArrayList<String>();
 		ArrayList<String> nodeList = new ArrayList<String>();// store the member node IDs
 		ArrayList<OSM_Way> wayList = new ArrayList<OSM_Way>();
-		boolean insideWayElement = false;
+		boolean insideWayElement = false;//make a boolean to track whether the parser is inside a Way element
 		
 
 		try {
@@ -76,6 +76,8 @@ public class FileCleaner {
 						nodeList = new ArrayList<String>();
 						// make a new HashMap for tags
 						 tags = new ArrayList<String>();
+						 // set inside way to true so we know we are processing a way element
+						 insideWayElement = true;
 
 						// get each attribute (for each attribute in the collection returned by the
 						// start element...
@@ -99,8 +101,8 @@ public class FileCleaner {
 
 					}
 					// if the element is not a member node then it should be a tag
-					// because of vaguaries of OSM data mdel we will check
-					else if (qName.equals("tag")) {
+					// because of vagaries of OSM data model we will still check
+					else if (qName.equals("tag") && insideWayElement) {
 						// get each attribute
 						for (Iterator<Attribute> NodeAttributes = startElement.getAttributes(); NodeAttributes
 								.hasNext();) {
@@ -126,6 +128,7 @@ public class FileCleaner {
 
 					OSM_Way way = new OSM_Way(changeSet, uid, userName, timeStamp, version, tags, nodes);
 					wayList.add(way);
+					insideWayElement = false;
 				}
 
 			}
