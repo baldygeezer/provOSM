@@ -66,9 +66,7 @@ public abstract class OSM_Primitive {
 		for (String[] s : mTags){
 			
 			tagString += "<tag "+ s[0] +  " " + s[1] + " /> \n";
-			
-	//		s += " ";
-	//		tagString += s;
+
 			
 			
 		}
