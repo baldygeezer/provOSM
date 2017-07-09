@@ -14,28 +14,36 @@ public abstract class OSM_Primitive {
 	private String mVersion;
 	private ArrayList<String[]> mTags;
 
-	public OSMDataType getmType() {
+	public OSMDataType getType() {
 		return mType;
 	}
 
-	public String getmChangeSet() {
+	public String getChangeSet() {
 		return mChangeSet;
 	}
 
-	public String getmUid() {
+	public String getUid() {
 		return mUid;
 	}
 
-	public String getmUserName() {
+	public String getUserName() {
 		return mUserName;
 	}
 
-	public String getmTimeStamp() {
+	public String getTimeStamp() {
 		return mTimeStamp;
 	}
 
-	public String getVersion() {
-		return mVersion;
+	public int getVersion() {
+		return Integer.parseInt(mVersion) ;
+	}
+
+	public String getId() {
+		return mId;
+	}
+
+	public void setmId(String mId) {
+		this.mId = mId;
 	}
 
 	public OSM_Primitive(OSMDataType type, String id, String changeSet, String uid, String userName, String timeStamp, String version, ArrayList<String[]> tags) {
