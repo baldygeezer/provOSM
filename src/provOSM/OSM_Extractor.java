@@ -26,7 +26,7 @@ public class OSM_Extractor {
 
 		ctr = 0;
 		try {
-            
+
 			this.mXMLInputFactory = XMLInputFactory.newFactory();
 			this.mXMLEventReader = mXMLInputFactory.createXMLEventReader(new FileReader(OSMDATAPATH + mInputFile));
 			this.mInputFile = mInputFile;
@@ -48,17 +48,23 @@ public class OSM_Extractor {
 	 * @return ArrayList<OSM_Way>
 	 */
 	public ArrayList<OSM_Way> extractWays() {
-		Map<String, String> attributeKeysValues = new HashMap<String, String>(); // store the Way's attributes
-		//Map<String, String> tags = new HashMap<String, String>();// store the Tag's attributes
-		ArrayList<String> tags =new ArrayList<String>();
-		ArrayList<String> nodeList = new ArrayList<String>();// store the member node IDs
+		Map<String, String> attributeKeysValues = new HashMap<String, String>(); // store
+																					// the
+																					// Way's
+																					// attributes
+		// Map<String, String> tags = new HashMap<String, String>();// store the
+		// Tag's attributes
+		ArrayList<String[]> tags = new ArrayList<String[]>();
+		ArrayList<String> nodeList = new ArrayList<String>();// store the member
+																// node IDs
 		ArrayList<OSM_Way> wayList = new ArrayList<OSM_Way>();
-		boolean insideWayElement = false;//make a boolean to track whether the parser is inside a Way element
-		
+		boolean insideWayElement = false;// make a boolean to track whether the
+											// parser is inside a Way element
 
 		try {
 
-			while (mXMLEventReader.hasNext()) {// keep pulling events from the parser and while there is one
+			while (mXMLEventReader.hasNext()) {// keep pulling events from the
+												// parser and while there is one
 												// to pull
 				XMLEvent event = mXMLEventReader.nextEvent();
 
@@ -68,30 +74,36 @@ public class OSM_Extractor {
 					StartElement startElement = event.asStartElement();
 					String qName = startElement.getName().toString();
 
-					// if the element is a Way we need to get its attributes and process it
+					// if the element is a Way we need to get its attributes and
+					// process it
 					if (qName.equals("way")) {
-						// make a new empty insance of the hashmap to store the attributes
+						// make a new empty insance of the hashmap to store the
+						// attributes
 						attributeKeysValues = new HashMap<String, String>();
 						// make a new list of node ids
 						nodeList = new ArrayList<String>();
 						// make a new HashMap for tags
-						 tags = new ArrayList<String>();
-						 // set inside way to true so we know we are processing a way element
-						 insideWayElement = true;
+						tags = new ArrayList<String[]>();
+						// set inside way to true so we know we are processing a
+						// way element
+						insideWayElement = true;
 
-						// get each attribute (for each attribute in the collection returned by the
+						// get each attribute (for each attribute in the
+						// collection returned by the
 						// start element...
 						for (Iterator<Attribute> attributes = startElement.getAttributes(); attributes.hasNext();) {
-							Attribute a = attributes.next();// grab it into 'a'...
+							Attribute a = attributes.next();// grab it into
+															// 'a'...
 							// ...then store it in the map
 							attributeKeysValues.put(a.getName().toString(), a.getValue());
 							ctr++;
 						}
 
 					}
-					// if the element is not an opening tag then check if it is a member node,
+					// if the element is not an opening tag then check if it is
+					// a member node,
 
-					else if (qName.equals("nd")) {
+					else if (qName.equals("nd") && insideWayElement) {
 						for (Iterator<Attribute> NodeAttributes = startElement.getAttributes(); NodeAttributes
 								.hasNext();) {
 							Attribute nd = NodeAttributes.next();
@@ -100,15 +112,29 @@ public class OSM_Extractor {
 						} // end for
 
 					}
-					// if the element is not a member node then it should be a tag
+					// if the element is not a member node then it should be a
+					// tag
 					// because of vagaries of OSM data model we will still check
 					else if (qName.equals("tag") && insideWayElement) {
+						int i = 1;
+						String[] tag = new String[2];
 						// get each attribute
 						for (Iterator<Attribute> NodeAttributes = startElement.getAttributes(); NodeAttributes
 								.hasNext();) {
 							Attribute tg = NodeAttributes.next();
 
-							tags.add(tg.getName().toString() + " = "+ tg.getValue());
+							if (i % 2 == 0) {
+								tag[0] = tg.getName().toString() + " = " + tg.getValue();
+
+							} else {
+								tag[1] = tg.getName().toString() + " = " + tg.getValue();
+								i++;
+								tags.add(tag);
+							}
+
+							
+							// tags.add(tg.getName().toString() + " = "+
+							// tg.getValue());
 						} // end for
 
 					}
@@ -128,7 +154,8 @@ public class OSM_Extractor {
 
 					OSM_Way way = new OSM_Way(changeSet, uid, userName, timeStamp, version, tags, nodes);
 					wayList.add(way);
-					insideWayElement = false;
+					insideWayElement = false;// set this to false to stop adding
+												// tags to the collection
 				}
 
 			}
@@ -143,16 +170,21 @@ public class OSM_Extractor {
 
 	}// end of method
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	/**
+	 * Method to return all the ways
+	 * 
+	 * 
+	 * @return ArrayList<OSM_Way>
+	 */
+
+	public ArrayList<OSM_Way> extractByTag() {
+		ArrayList<OSM_Way> buildinglist = new ArrayList<OSM_Way>();
+		ArrayList<OSM_Way> inputList = extractWays();
+
+		// for ()
+
+		return buildinglist;
+
+	}
 
 }
