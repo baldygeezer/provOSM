@@ -143,6 +143,7 @@ public class OSM_Extractor {
 				// if we reached the end of a way element
 				else if (event.getEventType() == XMLStreamConstants.END_ELEMENT
 						&& event.asEndElement().getName().toString().equals("way")) {
+					String id= attributeKeysValues.get("id");
 					String changeSet = attributeKeysValues.get("changeset");
 					String uid = attributeKeysValues.get("uid");
 					String userName = attributeKeysValues.get("user");
@@ -152,7 +153,7 @@ public class OSM_Extractor {
 					String[] nodes = new String[nodeList.size()];
 					nodeList.toArray(nodes);
 
-					OSM_Way way = new OSM_Way(changeSet, uid, userName, timeStamp, version, tags, nodes);
+					OSM_Way way = new OSM_Way(changeSet, id, uid, userName, timeStamp, version, tags, nodes);
 					wayList.add(way);
 					insideWayElement = false;// set this to false to stop adding
 												// tags to the collection

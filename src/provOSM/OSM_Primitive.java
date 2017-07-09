@@ -6,6 +6,7 @@ import java.util.Map;
 
 public abstract class OSM_Primitive {
 	private OSMDataType mType;
+	private String mId;
 	private String mChangeSet;
 	private String mUid;
 	private String mUserName;
@@ -37,8 +38,8 @@ public abstract class OSM_Primitive {
 		return mVersion;
 	}
 
-	public OSM_Primitive(OSMDataType type, String changeSet, String uid, String userName, String timeStamp, String version, ArrayList<String[]> tags) {
-		
+	public OSM_Primitive(OSMDataType type, String id, String changeSet, String uid, String userName, String timeStamp, String version, ArrayList<String[]> tags) {
+		this.mId = id;
 		this.mType = type;
 		this.mChangeSet = changeSet;
 		this.mUid = uid;
@@ -50,7 +51,7 @@ public abstract class OSM_Primitive {
 
 	@Override
 	public String toString() {
-		String wayString = "Username: "+ mUserName +", User ID: "+ mUid + ", Changeset: " + mChangeSet 
+		String wayString ="id: " + mId + ", Username: "+ mUserName +", User ID: "+ mUid + ", Changeset: " + mChangeSet 
 				+ ", Timestamp: " + mTimeStamp + ", Version: " + mVersion + tagsToString();
 		
 		
@@ -64,7 +65,7 @@ public abstract class OSM_Primitive {
 		
 		for (String[] s : mTags){
 			
-			tagString += "<tag "+ s[0] +  " " + s[1] + " /> ";
+			tagString += "<tag "+ s[0] +  " " + s[1] + " /> \n";
 			
 	//		s += " ";
 	//		tagString += s;

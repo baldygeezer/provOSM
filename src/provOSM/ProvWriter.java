@@ -34,26 +34,24 @@ public class ProvWriter {
 		switch (type){
 		 
 		 case WAY:
-			 //@TODO code for ways
-			//provFactory.
-			 
+			// provFactory.ad
+			
 			 
 			 
 			 break;
 		 
+		
 		 case NODE:
 			 System.out.println("We are not handling nodes yet");
+			 break;
 			 
-		
-		 
-		 
-		 
-		 
 		 case RELATION:
 			 System.out.println("We are not handling relations yet yet");
+			 break;
 			 
 		 case CHANGESET:
 			 System.out.println("Stopit already! I can't cope, give me ways!");
+			 break;
 			 
 	}}
 
