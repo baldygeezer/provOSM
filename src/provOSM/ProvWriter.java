@@ -112,4 +112,10 @@ public class ProvWriter {
 
     }
 
+    private void getSoftwareAgent(OSM_Primitive primitive) {
+
+    }
+
+
+
 }
