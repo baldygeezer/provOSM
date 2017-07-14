@@ -14,6 +14,10 @@ public abstract class OSM_Primitive {
 	private String mVersion;
 	private ArrayList<String[]> mTags;
 
+	public ArrayList<String[]> getmTags() {
+		return mTags;
+	}
+
 	public OSMDataType getType() {
 		return mType;
 	}
