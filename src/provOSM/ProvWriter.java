@@ -12,6 +12,7 @@ import org.openprovenance.prov.model.Document;
 import org.openprovenance.prov.model.Entity;
 import org.openprovenance.prov.model.ProvFactory;
 import org.openprovenance.prov.model.QualifiedName;
+import org.openprovenance.prov.xml.SoftwareAgent;
 
 
 public class ProvWriter {
@@ -112,10 +113,21 @@ public class ProvWriter {
 
     }
 
-    private void getSoftwareAgent(OSM_Primitive primitive) {
-
+    /**
+     *  generate a software agent using tag values (may not actually work!0
+     *
+     * @param primitive OSM_Primitive
+     * @return
+     */
+    private SoftwareAgent getSoftwareAgent(OSM_Primitive primitive) {
+        Agent agent = null;
+        for (String[] tag : primitive.getTags()) {
+            if (tag[1] == "created_by") {
+                agent = provFactory.newAgent(getQname(tag[2], OSMPREFIX));
+            }
+        }
+        return (SoftwareAgent) agent;
     }
-
 
 
 }
