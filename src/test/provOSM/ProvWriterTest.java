@@ -15,7 +15,7 @@ public class ProvWriterTest {
     private static OSM_Primitive[] way1 = {
             new OSM_Way("2345", "26636", "345", "wibble", "anytime", "1", tags, nodes),
             new OSM_Way("2345", "26636", "345", "wibble", "anytime", "2", tags, nodes),
-            new OSM_Way("2345", "26636", "345", "wibble", "anytime", "3", tags, nodes),
+            new OSM_Way("2345", "26636", "2356", "wibble", "anytime", "3", tags, nodes),
             };
     private static OSM_Primitive[] way2 = {
 
