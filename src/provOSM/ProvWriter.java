@@ -12,6 +12,7 @@ import org.openprovenance.prov.model.Document;
 import org.openprovenance.prov.model.Entity;
 import org.openprovenance.prov.model.ProvFactory;
 import org.openprovenance.prov.model.QualifiedName;
+import org.openprovenance.prov.model.WasAttributedTo;
 import org.openprovenance.prov.model.WasDerivedFrom;
 import org.openprovenance.prov.xml.*;
 import org.openprovenance.prov.xml.ObjectFactory;
@@ -29,7 +30,8 @@ public class ProvWriter {
     private static final String USRPREFIX = "USR";
     private static final String OSMns = "OSM";
     private Document mDocument;
-    private ArrayList<String> mAgentIDs;
+    private ArrayList<Agent> mAgents;
+    private ArrayList<SoftwareAgent> mSWAgents;
     ObjectFactory oprov;
 
     public ProvWriter(OSM_Primitive[][] OSM_Entities) {
@@ -38,8 +40,9 @@ public class ProvWriter {
         mNamespace.register("OSM", "htttp://openstreetmap.org/elements#");
         provFactory = InteropFramework.newXMLProvFactory();
         mDocument = provFactory.newDocument();
-        mAgentIDs = new ArrayList<String>();
+        mAgents = new ArrayList<>();
         oprov = new ObjectFactory();
+        mSWAgents = new ArrayList<>();
 
         for (OSM_Primitive OSM_Entity[] : OSM_Entities) {
 
@@ -87,10 +90,11 @@ public class ProvWriter {
         int i;
         // for every item in the versioned list (i had a reason for wanting a counter but can't remember...
         for (i = 0; i <= versions.length - 1; i++) {
-            //if the list of existing agents doesn't contain this id, make an agent
-            if (!mAgentIDs.contains(versions[i].getId())) {
-                Agent agent = provFactory.newAgent(getQname(versions[i].getId(), prefix), versions[i].getUserName());
-            }
+
+
+            //having made an agent we need to attribute the primitive to it
+            // WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, versions[i].agent.getId(), )
+
             //if this is the original...
             if (versions[i].getVersion() == 1) {//store it as original
                 original = provFactory.newEntity(getQname(versions[i].getId(), prefix), "way");//need to handle labels better
@@ -102,9 +106,14 @@ public class ProvWriter {
                 statements.add(entity);
             }
 
+            //create a software agent for the primitive
+            getSoftwareAgent(versions[i]);
+            //create an agent for the primitive
+            getAgents(versions[i], OSMPREFIX);
 
             //   mDocument.getStatementOrBundle().
         }
+        // create the derivedFrom relations
         for (Entity e : derivatives) {//for each later version
             int i2 = 0;
             if (i2 == 0) {//if we are on the second go round the loop the 1st item (v2) is derived from original
@@ -118,38 +127,71 @@ public class ProvWriter {
         }
 
 
-        SoftwareAgent SW_Agent = getSoftwareAgent(versions[i - 1]);
+        // todo create attributions to Agents
 
-        if (SW_Agent != null) {
-            statements.add(SW_Agent);
-        }
+        //todo create attibution to SW agents
+
+
+
 
     }
 
+
     /**
-     * generate a software agent using tag values. Method will return null if there are no 'created by' tags
+     * if no agent has already been created for the software used to create the primitive this method will
+     * create one and add it to a list stored as a member field
+     *
+     * @param p OSM_Primitive
+     * @return void
+     */
+    private void getAgents(OSM_Primitive p, String prefix) {
+        Agent agent;
+        boolean agentExists = false;// boolean set to true if an agent for this user has already been created
+
+        for (Agent a : mAgents) {
+            //search the list of agents for one that has the same user id as the primitive. set agentExists to true if we find it
+            agentExists = a.getId().getLocalPart().equals(p.getId()) ? true : false;
+        }
+
+        //if the agent doesn't already exist
+        if (!agentExists) {//create it
+            agent = provFactory.newAgent(getQname(p.getId(), prefix), p.getUserName());
+            mAgents.add(agent);//add it to the list
+
+        }
+    }
+
+
+    /**
+     * if no Software agent has already been created for the software used to create the primitive this method will
+     * create one and add it to a list stored as a member field
      *
      * @param primitive OSM_Primitive
-     * @return
+     * @return void
      */
-    private SoftwareAgent getSoftwareAgent(OSM_Primitive primitive) {
-        SoftwareAgent agent = null;
+    private void getSoftwareAgent(OSM_Primitive primitive) {
+        SoftwareAgent agent;
 
-        if (primitive.getTags() != null) {
-            for (String[] tag : primitive.getTags()) {
-                if (tag[0] == "created by") {
+        boolean SWAgentExists = false;//boolean set to true if we find an agent on the list
+        for (SoftwareAgent a : mSWAgents) { //search the list and if we find a corresponding id
+            if (a.getId().getLocalPart() == primitive.getId()) SWAgentExists = true; //set it to true
+        }
+
+        if (primitive.getTags() != null) { //if the primitive has tags
+            for (String[] tag : primitive.getTags()) {//for every tag...
+
+                if (tag[0] == "created by" && !SWAgentExists) { //if it is a 'created by' tag and no software agent has already been created for it
 //                    Agent sw=provFactory.newAgent(new SoftwareAgent());
 //                    agent = provFactory.newAgent(getQname(tag[1], OSMPREFIX));
-                    agent = oprov.createSoftwareAgent();
-                    agent.setId(getQname(tag[1], OSMPREFIX));
+                    agent = oprov.createSoftwareAgent();//create the agent
+                    agent.setId(getQname(tag[1], OSMPREFIX));//assign it a qname
+                    mSWAgents.add(agent);//add it to the list
 
-                    return agent;
                 }
             }
         }
 
 
-        return (SoftwareAgent) agent;
     }
 
 
