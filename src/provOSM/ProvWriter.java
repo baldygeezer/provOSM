@@ -93,7 +93,7 @@ public class ProvWriter {
 
 
             //having made an agent we need to attribute the primitive to it
-            // WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, versions[i].agent.getId(), )
+             //WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, versions[i].agent.getId(), )
 
             //if this is the original...
             if (versions[i].getVersion() == 1) {//store it as original
@@ -103,6 +103,7 @@ public class ProvWriter {
             } else {//if it is a later version
                 Entity entity = provFactory.newEntity(getQname(versions[i].getId(), prefix), "way");//store it as local var
                 derivatives[versions[i].getVersion() - 2] = entity;//put it into an index in the array that correspond to its version (v2 goes in index 0)
+
                 statements.add(entity);
             }
 
@@ -129,6 +130,22 @@ public class ProvWriter {
 
         // todo create attributions to Agents
 
+        for (OSM_Primitive p:versions) {
+            Agent creator=null;
+            for (Agent a:mAgents) {
+                if (a.getId().getLocalPart()==p.getUid()){
+                    creator=a;
+                }
+            }
+
+
+            WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, creator.getId(),getQname(p.getId(),WAYPREFIX ));
+            statements.add(madeBy);
+        }
+
+
+
+
         //todo create attibution to SW agents
 
 
@@ -150,12 +167,12 @@ public class ProvWriter {
 
         for (Agent a : mAgents) {
             //search the list of agents for one that has the same user id as the primitive. set agentExists to true if we find it
-            agentExists = a.getId().getLocalPart().equals(p.getId()) ? true : false;
+            agentExists = a.getId().getLocalPart().equals(p.getUid()) ? true : false;
         }
 
         //if the agent doesn't already exist
         if (!agentExists) {//create it
-            agent = provFactory.newAgent(getQname(p.getId(), prefix), p.getUserName());
+            agent = provFactory.newAgent(getQname(p.getUid(), prefix), p.getUserName());
             mAgents.add(agent);//add it to the list
 
         }
