@@ -139,7 +139,7 @@ public class ProvWriter {
             }
 
 
-            WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, creator.getId(),getQname(p.getId(),WAYPREFIX ));
+            WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, getQname(p.getId(),WAYPREFIX ),creator.getId());
             statements.add(madeBy);
         }
 
