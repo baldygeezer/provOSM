@@ -7,11 +7,13 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import org.openprovenance.prov.interop.*;
+import org.openprovenance.prov.model.Activity;
 import org.openprovenance.prov.model.Agent;
 import org.openprovenance.prov.model.Document;
 import org.openprovenance.prov.model.Entity;
 import org.openprovenance.prov.model.ProvFactory;
 import org.openprovenance.prov.model.QualifiedName;
+import org.openprovenance.prov.model.WasAssociatedWith;
 import org.openprovenance.prov.model.WasAttributedTo;
 import org.openprovenance.prov.model.WasDerivedFrom;
 import org.openprovenance.prov.xml.*;
@@ -28,11 +30,14 @@ public class ProvWriter {
     private static final String OSMPREFIX = "OSM";
     private static final String WAYPREFIX = "WAY";
     private static final String USRPREFIX = "USR";
+    private static final String CHANGESET = "CHANGESET";
     private static final String OSMns = "OSM";
     private Document mDocument;
     private ArrayList<Agent> mAgents;
     private ArrayList<SoftwareAgent> mSWAgents;
-    ObjectFactory oprov;
+    private ArrayList<Activity> mActivities;
+
+    private final ObjectFactory oprov;
 
     public ProvWriter(OSM_Primitive[][] OSM_Entities) {
         mNamespace = new Namespace();
@@ -41,12 +46,17 @@ public class ProvWriter {
         provFactory = InteropFramework.newXMLProvFactory();
         mDocument = provFactory.newDocument();
         mAgents = new ArrayList<>();
+
+        //this factory is from the xml framework; can't use the interop factory for generating some prov; Why?
         oprov = new ObjectFactory();
+
         mSWAgents = new ArrayList<>();
+        mActivities = new ArrayList<>();
 
         for (OSM_Primitive OSM_Entity[] : OSM_Entities) {
 
-
+//'cos we thought we might be looking at other primitive types...
+            //we will eventually so leave it for now
             switch (OSM_Entity[0].getType()) {
 
                 case WAY:
@@ -93,7 +103,7 @@ public class ProvWriter {
 
 
             //having made an agent we need to attribute the primitive to it
-             //WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, versions[i].agent.getId(), )
+            //WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, versions[i].agent.getId(), )
 
             //if this is the original...
             if (versions[i].getVersion() == 1) {//store it as original
@@ -107,13 +117,36 @@ public class ProvWriter {
                 statements.add(entity);
             }
 
-            //create a software agent for the primitive
-            getSoftwareAgent(versions[i]);
-            //create an agent for the primitive
-            getAgents(versions[i], OSMPREFIX);
 
-            //   mDocument.getStatementOrBundle().
-        }
+            //create an agent for the primitive
+            getAgents(versions[i], USRPREFIX);
+            // create an edit session for the primitive
+            getActivities(versions[i]);
+
+
+
+            //create a software agent for the primitive. associate it with an edit (activity
+            //if getSoftwareAgent returns true then there is a software agent for the primitive, either because it
+            // created one or because it found a pre-existing one, in which case we need to assocate them
+            if (getSoftwareAgent(versions[i])) {
+
+                for (Activity a : mActivities) {
+                    //if the activity has the changsetId that matches the chnageset attribute of the primitive
+                    if (a.getId().getLocalPart() == versions[i].getChangeSet()) {
+                        //associate them; we don't pull from the list of agents as this may slow things down, quicker to get the qualified name from the primitive
+                        WasAssociatedWith assoc = provFactory.newWasAssociatedWith(null, a.getId(), getQname(versions[i].getUid(), USRPREFIX));
+                        statements.add(assoc);
+                    }
+
+                }
+
+
+            }
+
+
+        } //************** end main for loop
+
+
         // create the derivedFrom relations
         for (Entity e : derivatives) {//for each later version
             int i2 = 0;
@@ -128,27 +161,43 @@ public class ProvWriter {
         }
 
 
-        // todo create attributions to Agents
+        //  create attributions to Agents
+        //for every primitive find its agent in the list and create the attribution
 
-        for (OSM_Primitive p:versions) {
-            Agent creator=null;
-            for (Agent a:mAgents) {
-                if (a.getId().getLocalPart()==p.getUid()){
-                    creator=a;
+        for (OSM_Primitive p : versions) {
+            Agent creator = null;
+            for (Agent a : mAgents) {
+                if (a.getId().getLocalPart() == p.getUid()) {
+                    creator = a;
                 }
             }
-
-
-            WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, getQname(p.getId(),WAYPREFIX ),creator.getId());
+            WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, getQname(p.getId(), WAYPREFIX), creator.getId());
             statements.add(madeBy);
         }
-
-
 
 
         //todo create attibution to SW agents
 
 
+    }
+
+    /**
+     * @param p OSM_Primitive
+     */
+    private void getActivities(OSM_Primitive p) {
+        Activity activity;
+        boolean activityExists = false;
+
+        for (Activity a : mActivities) {
+            if (a.getId().getLocalPart() == p.getChangeSet()) {
+                activityExists = true;
+            }
+        }
+
+        if (activityExists) {
+            activity = provFactory.newActivity(getQname(p.getChangeSet(), CHANGESET), "Map Edit");
+            mActivities.add(activity);
+        }
 
 
     }
@@ -158,7 +207,8 @@ public class ProvWriter {
      * if no agent has already been created for the software used to create the primitive this method will
      * create one and add it to a list stored as a member field
      *
-     * @param p OSM_Primitive
+     * @param p      OSM_Primitive
+     * @param prefix String
      * @return void
      */
     private void getAgents(OSM_Primitive p, String prefix) {
@@ -181,17 +231,21 @@ public class ProvWriter {
 
     /**
      * if no Software agent has already been created for the software used to create the primitive this method will
-     * create one and add it to a list stored as a member field
+     * create one and add it to a list stored as a member field. returns true is an agent was
      *
      * @param primitive OSM_Primitive
-     * @return void
+     * @return boolean
      */
-    private void getSoftwareAgent(OSM_Primitive primitive) {
+    private boolean getSoftwareAgent(OSM_Primitive primitive) {
         SoftwareAgent agent;
+        boolean agentCreated = false;
 
         boolean SWAgentExists = false;//boolean set to true if we find an agent on the list
         for (SoftwareAgent a : mSWAgents) { //search the list and if we find a corresponding id
-            if (a.getId().getLocalPart() == primitive.getId()) SWAgentExists = true; //set it to true
+            if (a.getId().getLocalPart() == primitive.getId()) {
+                SWAgentExists = true; //set it to true
+                agentCreated = true;// }
+            }
         }
 
         if (primitive.getTags() != null) { //if the primitive has tags
@@ -203,12 +257,12 @@ public class ProvWriter {
                     agent = oprov.createSoftwareAgent();//create the agent
                     agent.setId(getQname(tag[1], OSMPREFIX));//assign it a qname
                     mSWAgents.add(agent);//add it to the list
-
+                    agentCreated = true;
                 }
             }
         }
 
-
+        return agentCreated;
     }
 
 
