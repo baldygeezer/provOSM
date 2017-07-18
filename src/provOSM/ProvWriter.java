@@ -194,7 +194,7 @@ public class ProvWriter {
             }
         }
 
-        if (activityExists) {
+        if (!activityExists) {
             activity = provFactory.newActivity(getQname(p.getChangeSet(), CHANGESET), "Map Edit");
             mActivities.add(activity);
         }
