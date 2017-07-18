@@ -98,6 +98,10 @@ public class ProvWriter {
         Entity[] derivatives = new Entity[versions.length - 1];//list of subsequent versions
         ArrayList<StatementOrBundle> statements = new ArrayList<>();
         int i;
+
+
+        //Start main for loop: make an entity for each version *****************
+
         // for every item in the versioned list (i had a reason for wanting a counter but can't remember...
         for (i = 0; i <= versions.length - 1; i++) {
 
@@ -124,25 +128,25 @@ public class ProvWriter {
             getActivities(versions[i]);
 
 
-
             //create a software agent for the primitive. associate it with an edit (activity
             //if getSoftwareAgent returns true then there is a software agent for the primitive, either because it
             // created one or because it found a pre-existing one, in which case we need to assocate them
+
             if (getSoftwareAgent(versions[i])) {
 
                 for (Activity a : mActivities) {
                     //if the activity has the changsetId that matches the chnageset attribute of the primitive
                     if (a.getId().getLocalPart() == versions[i].getChangeSet()) {
                         //associate them; we don't pull from the list of agents as this may slow things down, quicker to get the qualified name from the primitive
-                        WasAssociatedWith assoc = provFactory.newWasAssociatedWith(null, a.getId(), getQname(versions[i].getUid(), USRPREFIX));
-                        statements.add(assoc);
+                        WasAssociatedWith softwareEditAssoc = provFactory.newWasAssociatedWith(null, a.getId(), getQname(versions[i].getUid(), USRPREFIX));
+                        statements.add(softwareEditAssoc);
                     }
-
                 }
-
-
             }
 
+            //associate the user agent with the edit activity, using info we already have rather than more loping over arraylists...
+            WasAssociatedWith agentEditAssoc = provFactory.newWasAssociatedWith(null, getQname(versions[i].getChangeSet(), CHANGESET), getQname(versions[i].getUid(), USRPREFIX));
+            statements.add(agentEditAssoc);
 
         } //************** end main for loop
 
@@ -174,9 +178,6 @@ public class ProvWriter {
             WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, getQname(p.getId(), WAYPREFIX), creator.getId());
             statements.add(madeBy);
         }
-
-
-        //todo create attibution to SW agents
 
 
     }
