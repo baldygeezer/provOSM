@@ -57,10 +57,9 @@ public class ProvWriter {
 
 //'cos we thought we might be looking at other primitive types...
             //we will eventually so leave it for now
-            switch (OSM_Entity[0].getType()) {
+/*            switch (OSM_Entity[0].getType()) {
 
                 case WAY:
-
 
                     //       Entity original = provFactory.newEntity(getQname(OSM_Entity.getId()));
 
@@ -78,7 +77,7 @@ public class ProvWriter {
                 case CHANGESET:
                     System.out.println("Stopit already! I can't cope, give me ways!");
                     break;
-            }
+            }*/
         }
 
     }
