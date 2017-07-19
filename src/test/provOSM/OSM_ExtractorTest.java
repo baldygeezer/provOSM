@@ -4,6 +4,7 @@ import org.junit.*;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -14,7 +15,7 @@ public class OSM_ExtractorTest {
     private static ArrayList<String[]> tags;
     private static OSM_Extractor extractor;
     private static String[] nodes = {"gegg5", "dsfs"};
-    private static OSM_Primitive[] waylist = {
+    private static OSM_Primitive[] ways = {
             new OSM_Way("2345", "26636", "345", "wibble", "anytime", "1", tags, nodes),
             new OSM_Way("2345", "26636", "345", "wibble", "anytime", "3", tags, nodes),
             new OSM_Way("2345", "26636", "345", "wibble", "anytime", "2", tags, nodes),
@@ -26,6 +27,8 @@ public class OSM_ExtractorTest {
             new OSM_Way("232345", "26636", "345", "wibble", "anytime", "1", tags, nodes),
             new OSM_Way("232345", "26636", "345", "wibble", "anytime", "2", tags, nodes)};
 
+    ArrayList<OSM_Primitive> waylist=new ArrayList<OSM_Primitive>(Arrays.asList(ways));
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         tags = new ArrayList<String[]>();
@@ -33,7 +36,7 @@ public class OSM_ExtractorTest {
         String[] y = {"wibble", "woo"};
         tags.add(s);
         tags.add(y);
-        extractor = new OSM_Extractor("ptwdMiniTest.osm", "wibble");
+        extractor = new OSM_Extractor("ptwdMiniTest.osm");
 
     }
 
