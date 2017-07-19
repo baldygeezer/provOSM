@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version="0.6" generator="osmium/1.6.1">
+
+
+    <node id="254429" version="7" timestamp="2012-03-07T15:07:12Z" uid="14020" user="Nick Austin" changeset="10899959" lat="50.9199448" lon="-1.3953573">
+        <tag k="highway" v="traffic_signals"/>
+        <tag k="crossing" v="island;uncontrolled"/>
+    </node>
+    <node id="254430" version="1" timestamp="2007-09-25T13:11:17Z" uid="12935" user="perros" changeset="514036" lat="50.9230534" lon="-1.3952716"/>
+
+
+
+    <way id="33740675" version="1" timestamp="2009-04-27T13:02:10Z" uid="21244" user="jpd" changeset="989816">
+        <nd ref="544742"/>
+        <nd ref="260747025"/>
+        <nd ref="27558592"/>
+        <nd ref="544322"/>
+        <nd ref="544321"/>
+        <nd ref="700387"/>
+        <nd ref="544320"/>
+        <nd ref="26001629"/>
+        <nd ref="544318"/>
+        <nd ref="324341"/>
+        <nd ref="254430"/>
+        <nd ref="21420434"/>
+        <nd ref="319640"/>
+        <nd ref="319638"/>
+        <nd ref="700538"/>
+        <nd ref="260977363"/>
+        <nd ref="254429"/>
+        <tag k="foot" v="yes"/>
+        <tag k="name" v="Portswood Road"/>
+        <tag k="horse" v="yes"/>
+        <tag k="bicycle" v="yes"/>
+        <tag k="highway" v="tertiary"/>
+        <tag k="motorcar" v="yes"/>
+        <tag k="created_by" v="Potlatch 0.10f"/>
+    </way>
+    <way id="33740675" version="2" timestamp="2009-06-25T19:19:49Z" uid="174" user="Lard" changeset="1624965">
+        <nd ref="544742"/>
+        <nd ref="260747025"/>
+        <nd ref="27558592"/>
+        <nd ref="544322"/>
+        <nd ref="544321"/>
+        <nd ref="700387"/>
+        <nd ref="544320"/>
+        <nd ref="26001629"/>
+        <nd ref="544318"/>
+        <nd ref="324341"/>
+        <nd ref="429310460"/>
+        <nd ref="254430"/>
+        <nd ref="21420434"/>
+        <nd ref="319640"/>
+        <nd ref="319638"/>
+        <nd ref="700538"/>
+        <nd ref="260977363"/>
+        <nd ref="254429"/>
+        <tag k="foot" v="yes"/>
+        <tag k="name" v="Portswood Road"/>
+        <tag k="horse" v="yes"/>
+        <tag k="bicycle" v="yes"/>
+        <tag k="highway" v="tertiary"/>
+        <tag k="motorcar" v="yes"/>
+        <tag k="created_by" v="Potlatch 0.10f"/>
+    </way>
+
+
+
+
+
+
+    <way id="160668937" version="1" timestamp="2012-04-22T20:13:15Z" uid="534393" user="Chris Baines"
+         changeset="11388624">
+        <nd ref="1727061801"/>
+        <nd ref="1727061685"/>
+        <nd ref="1727061603"/>
+        <nd ref="1727061669"/>
+        <nd ref="1727061648"/>
+        <nd ref="1727061795"/>
+        <nd ref="1727061600"/>
+        <nd ref="1727061642"/>
+        <nd ref="1727061614"/>
+        <nd ref="1727061613"/>
+        <nd ref="1727061801"/>
+        <tag k="building" v="yes"/>
+    </way>
+    <way id="160668937" version="2" timestamp="2012-08-20T09:07:33Z" uid="534393" user="Chris Baines"
+         changeset="12793195">
+        <nd ref="1727061801"/>
+        <nd ref="1727061685"/>
+        <nd ref="1727061603"/>
+        <nd ref="1727061669"/>
+        <nd ref="1727061648"/>
+        <nd ref="1727061795"/>
+        <nd ref="1727061600"/>
+        <nd ref="1727061642"/>
+        <nd ref="1727061614"/>
+        <nd ref="1727061613"/>
+        <nd ref="1727061801"/>
+        <tag k="name" v="Gordon Arms"/>
+        <tag k="website" v="http://www.gordonarms.net/"/>
+        <tag k="building" v="yes"/>
+        <tag k="addr:street" v="Portswood Road"/>
+        <tag k="addr:postcode" v="SO17 2FU"/>
+        <tag k="addr:housenumber" v="113"/>
+    </way>
+    <way id="160668937" version="3" timestamp="2014-03-13T11:51:27Z" uid="2098" user="Andy Street" changeset="21081127">
+        <nd ref="1727061801"/>
+        <nd ref="1727061685"/>
+        <nd ref="1727061603"/>
+        <nd ref="1727061669"/>
+        <nd ref="1727061648"/>
+        <nd ref="1727061795"/>
+        <nd ref="1727061600"/>
+        <nd ref="1727061642"/>
+        <nd ref="1727061614"/>
+        <nd ref="1727061613"/>
+        <nd ref="1727061801"/>
+        <tag k="name" v="Gordon Arms"/>
+        <tag k="website" v="http://www.gordonarms.net/"/>
+        <tag k="building" v="yes"/>
+        <tag k="addr:city" v="Southampton"/>
+        <tag k="addr:street" v="Portswood Road"/>
+        <tag k="addr:country" v="GB"/>
+        <tag k="addr:postcode" v="SO17 2FU"/>
+        <tag k="addr:housenumber" v="113"/>
+    </way>
+
+
+
+
+    <way id="162141721" version="1" timestamp="2012-05-04T21:07:08Z" uid="534393" user="Chris Baines"
+         changeset="11502302">
+        <nd ref="1740735271"/>
+        <nd ref="1740735273"/>
+        <nd ref="1740735272"/>
+        <nd ref="1740735270"/>
+        <nd ref="1740735271"/>
+        <tag k="building" v="house"/>
+    </way>
+    <way id="162141721" version="2" timestamp="2012-08-20T09:07:35Z" uid="534393" user="Chris Baines"
+         changeset="12793195">
+        <nd ref="1740735271"/>
+        <nd ref="1740735273"/>
+        <nd ref="1740735272"/>
+        <nd ref="1740735270"/>
+        <nd ref="1740735271"/>
+        <tag k="building" v="house"/>
+        <tag k="addr:street" v="Portswood Road"/>
+        <tag k="addr:housenumber" v="105"/>
+    </way>
+
+    <way id="162141721" version="3" timestamp="2012-08-20T09:07:35Z" uid="534393" user="Chris Baines"
+         changeset="12793194">
+        <nd ref="1740735271"/>
+        <nd ref="1740735273"/>
+        <nd ref="1740735272"/>
+        <nd ref="1740735270"/>
+        <nd ref="1740735271"/>
+        <tag k="building" v="house"/>
+        <tag k="addr:street" v="Portswood Road"/>
+        <tag k="addr:housenumber" v="105"/>
+    </way>
+
+
+
+
+    <way id="162141722" version="1" timestamp="2012-05-04T21:07:08Z" uid="534393" user="Chris Baines"
+         changeset="11502302">
+        <nd ref="1740735278"/>
+        <nd ref="1740735281"/>
+        <nd ref="1740735290"/>
+        <nd ref="1740735279"/>
+        <nd ref="1740735278"/>
+        <tag k="building" v="house"/>
+    </way>
+    <way id="162141722" version="2" timestamp="2012-08-20T09:07:35Z" uid="534393" user="Chris Baines"
+         changeset="12793195">
+        <nd ref="1740735278"/>
+        <nd ref="1740735281"/>
+        <nd ref="1740735290"/>
+        <nd ref="1740735279"/>
+        <nd ref="1740735278"/>
+        <tag k="building" v="house"/>
+        <tag k="addr:street" v="Portswood Road"/>
+        <tag k="addr:housenumber" v="111"/>
+    </way>
+
+</osm>

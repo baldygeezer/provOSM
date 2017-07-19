@@ -50,19 +50,16 @@ public class  OSM_Extractor {
     }
 
 
+    /***
+     *
+     * Returns an array of arrays containing each version of  primitive elements having a specific tag
+     * @param tag
+     */
+    public OSM_Way[][] getVersionedElements(String tag){
+OSM_Way [][] vList;
+ArrayList<OSM_Way> wayList=extractByTag(tag);
 
-
-    public void getVersionedElements(String tag){
-OSM_Primitive [][] vList;
-ArrayList<OSM_Primitive> wayList=new ArrayList<>();
-
-if (tag==null){
-
-}
-
-
-
-//return vList;
+return getVersions(wayList);
     }
 
 
@@ -182,7 +179,7 @@ if (tag==null){
                     String[] nodes = new String[nodeList.size()];
                     nodeList.toArray(nodes);
 
-                    OSM_Way way = new OSM_Way(changeSet, id, uid, userName, timeStamp, version, tags, nodes);
+                    OSM_Way way = new OSM_Way(id, changeSet,  uid, userName, timeStamp, version, tags, nodes);
                     wayList.add(way);
                     insideWayElement = false;// set this to false to stop adding
                     // tags to the collection
@@ -212,7 +209,7 @@ if (tag==null){
 
         for (OSM_Way w:inputList){
             for (String[] wl :w.getTags()) {
-                if(wl[0]==tagKey){
+                if(wl[0].equals(tagKey)){
                     taglist.add(w);
                 }
             }
@@ -229,14 +226,14 @@ if (tag==null){
      * @param pList
      * @return OSMPrimitive[][]
      */
-    protected OSM_Primitive[][] getVersions(ArrayList <OSM_Primitive> pList) {
-        ArrayList<OSM_Primitive[]> versionsList = new ArrayList<OSM_Primitive[]>();// the array of arrays!
-        ArrayList<OSM_Primitive> vList = new ArrayList<OSM_Primitive>();// a list to store the versions of each way
+    protected OSM_Way[][] getVersions(ArrayList <OSM_Way> pList) {
+        ArrayList<OSM_Way[]> versionsList = new ArrayList<>();// the array of arrays!
+        ArrayList<OSM_Way> vList = new ArrayList<>();// a list to store the versions of each way
         String pId = pList.get(0).getId();// stores the id of an item, starting with the first...
         OSMDataType type = pList.get(0).getType();// ...Store the type to as OSM primitives can have duplicate IDs for different types
         int ctr = 0;
 
-        for (OSM_Primitive p : pList) { // for every item...
+        for (OSM_Way p : pList) { // for every item...
             ctr++;
             if (p.getId().equals(pId) && p.getType().equals(type)) {// ...if the item id and type are the same values as the ones we have stored...
 
@@ -249,11 +246,11 @@ if (tag==null){
             } else { // if not...
                 // we store the old list
                 vList.sort(Comparator.comparing(OSM_Primitive::getVersion));// prepare the list by sorting by version
-                OSM_Primitive[] v = vList.toArray(new OSM_Primitive[vList.size()]); // convert to primitive array
+                OSM_Way[] v = vList.toArray(new OSM_Way[vList.size()]); // convert to primitive array
                 versionsList.add(v);// add it to the final arraylist
                 // then make a new one
                 pId = p.getId(); // store the new id
-                vList = new ArrayList<OSM_Primitive>();// make a new list
+                vList = new ArrayList<OSM_Way>();// make a new list
                 vList.add(p);// store the item that has a different id or type in the new list
                 // update the stored type and id values with the new ones ready to go round the loop again
                 pId = p.getId();
@@ -263,7 +260,7 @@ if (tag==null){
 
         }
 
-        OSM_Primitive[][] versions = versionsList.toArray(new OSM_Primitive[versionsList.size()][]);
+        OSM_Way[][] versions = versionsList.toArray(new OSM_Way[versionsList.size()][]);
         return versions;
     }
 
@@ -273,9 +270,9 @@ if (tag==null){
      * @param versionsList the list used for storage
      * @return
      */
-    private void prepareList(ArrayList<OSM_Primitive> vList, ArrayList<OSM_Primitive[]> versionsList) {
+    private void prepareList(ArrayList<OSM_Way> vList, ArrayList<OSM_Way[]> versionsList) {
         vList.sort(Comparator.comparing(OSM_Primitive::getVersion));// prepare the list by sorting by version
-        OSM_Primitive[] v = vList.toArray(new OSM_Primitive[vList.size()]); // convert to primitive array
+        OSM_Way[] v = vList.toArray(new OSM_Way[vList.size()]); // convert to primitive array
         versionsList.add(v);// add it to the final arraylist
     }
 }
