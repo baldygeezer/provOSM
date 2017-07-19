@@ -38,8 +38,9 @@ public class ProvWriter {
     private ArrayList<Activity> mActivities;
 
     private final ObjectFactory oprov;
+    private OSM_Extractor mOSM_Extractor;
 
-    public ProvWriter(OSM_Primitive[][] OSM_Entities) {
+    public ProvWriter(OSM_Extractor osm_extractor) {
         mNamespace = new Namespace();
         mNamespace.addKnownNamespaces();
         mNamespace.register("OSM", "htttp://openstreetmap.org/elements#");
@@ -52,11 +53,12 @@ public class ProvWriter {
 
         mSWAgents = new ArrayList<>();
         mActivities = new ArrayList<>();
+        mOSM_Extractor = osm_extractor;
 
-        for (OSM_Primitive OSM_Entity[] : OSM_Entities) {
+        //   for (OSM_Primitive OSM_Entity[] : OSM_Entities) {
 
 //'cos we thought we might be looking at other primitive types...
-            //we will eventually so leave it for now
+        //we will eventually so leave it for now
 /*            switch (OSM_Entity[0].getType()) {
 
                 case WAY:
@@ -78,7 +80,23 @@ public class ProvWriter {
                     System.out.println("Stopit already! I can't cope, give me ways!");
                     break;
             }*/
+        //  }
+
+    }
+
+
+    public void getDocument() {
+        for(OSM_Primitive[] v: mOSM_Extractor.getVersionedElements("k = building")){
+
+           mDocument.getStatementOrBundle().addAll(create_bundle(v,OSMPREFIX)) ;
+
+
         }
+
+
+
+
+
 
     }
 
@@ -92,7 +110,7 @@ public class ProvWriter {
 
     }
 
-    protected void create_bundle(OSM_Primitive[] versions, String prefix) {
+    protected ArrayList<StatementOrBundle> create_bundle(OSM_Primitive[] versions, String prefix) {
         Entity original = new org.openprovenance.prov.xml.Entity();//the original osm primitive
         Entity[] derivatives = new Entity[versions.length - 1];//list of subsequent versions
         ArrayList<StatementOrBundle> statements = new ArrayList<>();
@@ -178,7 +196,7 @@ public class ProvWriter {
             statements.add(madeBy);
         }
 
-
+return statements;
     }
 
     /**
