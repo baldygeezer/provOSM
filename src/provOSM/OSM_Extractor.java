@@ -27,9 +27,9 @@ public class  OSM_Extractor {
      * which currently seems to be the case for OSH files from Geofabrik, OSM and Osmium output
      *
      * @param mInputFile
-     * @param mOutPutFile
+
      */
-    public OSM_Extractor(String mInputFile, String mOutPutFile) {
+    public OSM_Extractor(String mInputFile) {
 
         ctr = 0;
         try {
@@ -37,7 +37,7 @@ public class  OSM_Extractor {
             this.mXMLInputFactory = XMLInputFactory.newFactory();
             this.mXMLEventReader = mXMLInputFactory.createXMLEventReader(new FileReader(OSMDATAPATH + mInputFile));
             this.mInputFile = mInputFile;
-            this.mOutPutFile = mOutPutFile;
+           // this.mOutPutFile = mOutPutFile;
 
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
@@ -48,6 +48,24 @@ public class  OSM_Extractor {
         }
 
     }
+
+
+
+
+    public void getVersionedElements(String tag){
+OSM_Primitive [][] vList;
+ArrayList<OSM_Primitive> wayList=new ArrayList<>();
+
+if (tag==null){
+
+}
+
+
+
+//return vList;
+    }
+
+
 
 
     /***
@@ -62,13 +80,13 @@ public class  OSM_Extractor {
      * @return ArrayList<OSM_Way>
      */
     public ArrayList<OSM_Way> extractWays() {
-        Map<String, String> attributeKeysValues = new HashMap<String, String>(); // store  the  Way's  attributes
+        Map<String, String> attributeKeysValues = new HashMap<>(); // store  the  Way's  attributes
         // Map<String, String> tags = new HashMap<String, String>();// store the
         // Tag's attributes
-        ArrayList<String[]> tags = new ArrayList<String[]>();
-        ArrayList<String> nodeList = new ArrayList<String>();// store the member
+        ArrayList<String[]> tags = new ArrayList<>();
+        ArrayList<String> nodeList = new ArrayList<>();// store the member
         // node IDs
-        ArrayList<OSM_Way> wayList = new ArrayList<OSM_Way>();
+        ArrayList<OSM_Way> wayList = new ArrayList<>();
         boolean insideWayElement = false;// make a boolean to track whether the
         // parser is inside a Way element
 
@@ -90,11 +108,11 @@ public class  OSM_Extractor {
                     if (qName.equals("way")) {
                         // make a new empty insance of the hashmap to store the
                         // attributes
-                        attributeKeysValues = new HashMap<String, String>();
+                        attributeKeysValues = new HashMap<>();
                         // make a new list of node ids
-                        nodeList = new ArrayList<String>();
+                        nodeList = new ArrayList<>();
                         // make a new HashMap for tags
-                        tags = new ArrayList<String[]>();
+                        tags = new ArrayList<>();
                         // set inside way to true so we know we are processing a
                         // way element
                         insideWayElement = true;
@@ -183,18 +201,24 @@ public class  OSM_Extractor {
     }// end of method
 
     /**
-     * Method to return all the ways
+     * Method to return all the elements with a specific tag
      *
      * @return ArrayList<OSM_Way>
      */
 
-    public ArrayList<OSM_Way> extractByTag() {
-        ArrayList<OSM_Way> buildinglist = new ArrayList<OSM_Way>();
+    public ArrayList<OSM_Way> extractByTag(String tagKey) {
+        ArrayList<OSM_Way> taglist = new ArrayList<>();
         ArrayList<OSM_Way> inputList = extractWays();
 
-        // for ()
+        for (OSM_Way w:inputList){
+            for (String[] wl :w.getTags()) {
+                if(wl[0]==tagKey){
+                    taglist.add(w);
+                }
+            }
+        }
 
-        return buildinglist;
+        return taglist;
 
     }
 
@@ -205,11 +229,11 @@ public class  OSM_Extractor {
      * @param pList
      * @return OSMPrimitive[][]
      */
-    protected OSM_Primitive[][] getVersions(OSM_Primitive[] pList) {
+    protected OSM_Primitive[][] getVersions(ArrayList <OSM_Primitive> pList) {
         ArrayList<OSM_Primitive[]> versionsList = new ArrayList<OSM_Primitive[]>();// the array of arrays!
         ArrayList<OSM_Primitive> vList = new ArrayList<OSM_Primitive>();// a list to store the versions of each way
-        String pId = pList[0].getId();// stores the id of an item, starting with the first...
-        OSMDataType type = pList[0].getType();// ...Store the type to as OSM primitives can have duplicate IDs for different types
+        String pId = pList.get(0).getId();// stores the id of an item, starting with the first...
+        OSMDataType type = pList.get(0).getType();// ...Store the type to as OSM primitives can have duplicate IDs for different types
         int ctr = 0;
 
         for (OSM_Primitive p : pList) { // for every item...
@@ -217,7 +241,7 @@ public class  OSM_Extractor {
             if (p.getId().equals(pId) && p.getType().equals(type)) {// ...if the item id and type are the same values as the ones we have stored...
 
                 vList.add(p); // ...add the item to a list
-                if (ctr == pList.length)
+                if (ctr == pList.size())
                 {
                     prepareList(vList, versionsList);
                 }
