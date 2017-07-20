@@ -124,6 +124,7 @@
         <tag k="addr:country" v="GB"/>
         <tag k="addr:postcode" v="SO17 2FU"/>
         <tag k="addr:housenumber" v="113"/>
+        <tag k="created_by" v="Potlatch 0.10f"/>
     </way>
 
 
