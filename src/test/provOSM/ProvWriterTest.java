@@ -39,7 +39,7 @@ public class ProvWriterTest {
         String[] y = {"created by", "woo"};
         tags.add(s);
         tags.add(y);
-        provWriter=new ProvWriter(waylist);
+        provWriter=new ProvWriter(new OSM_Extractor("testfixture"));
     }
 
     @Before

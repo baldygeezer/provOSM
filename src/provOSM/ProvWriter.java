@@ -1,5 +1,6 @@
 package provOSM;
 
+import org.openprovenance.prov.interop.InteropFramework.ProvFormat;
 import org.openprovenance.prov.model.*;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class ProvWriter {
     private ArrayList<Agent> mAgents;
     private ArrayList<SoftwareAgent> mSWAgents;
     private ArrayList<Activity> mActivities;
-
+    private boolean documentCreated;
     private final ObjectFactory oprov;
     private OSM_Extractor mOSM_Extractor;
 
@@ -46,6 +47,7 @@ public class ProvWriter {
         mNamespace.register("OSM", "htttp://openstreetmap.org/elements#");
         provFactory = InteropFramework.newXMLProvFactory();
         mDocument = provFactory.newDocument();
+        documentCreated = false;
         mAgents = new ArrayList<>();
 
         //this factory is from the xml framework; can't use the interop factory for generating some prov; Why?
@@ -86,18 +88,36 @@ public class ProvWriter {
 
 
     public void getDocument() {
-        for(OSM_Primitive[] v: mOSM_Extractor.getVersionedElements("k = building")){
+        for (OSM_Primitive[] v : mOSM_Extractor.getVersionedElements("k = building")) {
 
-           mDocument.getStatementOrBundle().addAll(create_bundle(v,OSMPREFIX)) ;
-
+            mDocument.getStatementOrBundle().addAll(create_bundle(v, OSMPREFIX));
+            mDocument.setNamespace(mNamespace);
+            documentCreated = true;
 
         }
+    }
 
 
+    public void printDocumentToScreen() {
+
+        if (documentCreated) {
+           // System.out.println(mDocument.toString());
+            convertToProvN(mDocument, "");
+
+        } else {
 
 
+            getDocument();
+            //System.out.println(mDocument.toString());
+            convertToProvN(mDocument, "");
+        }
+    }
 
 
+    public void convertToProvN(Document document, String file) {
+        InteropFramework interOp = new InteropFramework();
+       // interOp.writeDocument(file, document);
+        interOp.writeDocument(System.out, ProvFormat.PROVN, document);
     }
 
 
@@ -190,13 +210,14 @@ public class ProvWriter {
             for (Agent a : mAgents) {
                 if (a.getId().getLocalPart() == p.getUid()) {
                     creator = a;
+                    WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, getQname(p.getId(), WAYPREFIX), creator.getId());
+                    statements.add(madeBy);
                 }
             }
-            WasAttributedTo madeBy = provFactory.newWasAttributedTo(null, getQname(p.getId(), WAYPREFIX), creator.getId());
-            statements.add(madeBy);
+
         }
 
-return statements;
+        return statements;
     }
 
     /**
