@@ -4,8 +4,6 @@ import org.openprovenance.prov.interop.InteropFramework.ProvFormat;
 import org.openprovenance.prov.model.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 
 import org.openprovenance.prov.interop.*;
 import org.openprovenance.prov.model.Activity;
@@ -44,7 +42,9 @@ public class ProvWriter {
     public ProvWriter(OSM_Extractor osm_extractor) {
         mNamespace = new Namespace();
         mNamespace.addKnownNamespaces();
-        mNamespace.register("OSM", "htttp://openstreetmap.org/elements#");
+        mNamespace.register(OSMPREFIX, "htttp://openstreetmap.org/");
+        mNamespace.register(WAYPREFIX, "http://wiki.openstreetmap.org/wiki/Way");
+
         provFactory = InteropFramework.newXMLProvFactory();
         mDocument = provFactory.newDocument();
         documentCreated = false;
@@ -91,17 +91,21 @@ public class ProvWriter {
         for (OSM_Primitive[] v : mOSM_Extractor.getVersionedElements("k = building")) {
 
             mDocument.getStatementOrBundle().addAll(create_bundle(v, OSMPREFIX));
-            mDocument.setNamespace(mNamespace);
-            documentCreated = true;
 
         }
+
+        mDocument.getStatementOrBundle().addAll(getAgentBundle());
+        mDocument.getStatementOrBundle().addAll(getActivityBundle());
+        mDocument.setNamespace(mNamespace);
+        documentCreated = true;
+
     }
 
 
     public void printDocumentToScreen() {
 
         if (documentCreated) {
-           // System.out.println(mDocument.toString());
+            // System.out.println(mDocument.toString());
             convertToProvN(mDocument, "");
 
         } else {
@@ -116,7 +120,7 @@ public class ProvWriter {
 
     public void convertToProvN(Document document, String file) {
         InteropFramework interOp = new InteropFramework();
-       // interOp.writeDocument(file, document);
+        // interOp.writeDocument(file, document);
         interOp.writeDocument(System.out, ProvFormat.PROVN, document);
     }
 
@@ -189,8 +193,9 @@ public class ProvWriter {
 
 
         // create the derivedFrom relations
+        int i2 = 0;
         for (Entity e : derivatives) {//for each later version
-            int i2 = 0;
+
             if (i2 == 0) {//if we are on the second go round the loop the 1st item (v2) is derived from original
                 WasDerivedFrom der = provFactory.newWasDerivedFrom(derivatives[0].getId(), original.getId());
                 statements.add(der);
@@ -220,6 +225,36 @@ public class ProvWriter {
         return statements;
     }
 
+
+    private ArrayList<StatementOrBundle> getAgentBundle() {
+        ArrayList<StatementOrBundle> statements = new ArrayList<>();
+        //add agents
+        for (Agent a : mAgents) {
+            statements.add(a);
+        }
+        //add softwareagents
+
+        for (SoftwareAgent sw : mSWAgents) {
+            statements.add(sw);
+        }
+
+        return statements;
+    }
+
+
+    private ArrayList<StatementOrBundle> getActivityBundle(){
+        ArrayList<StatementOrBundle> statements = new ArrayList<>();
+        for (Activity a:mActivities){
+            statements.add(a);
+        }
+        return statements;
+
+    }
+
+
+
+
+
     /**
      * @param p OSM_Primitive
      */
@@ -228,7 +263,7 @@ public class ProvWriter {
         boolean activityExists = false;
 
         for (Activity a : mActivities) {
-            if (a.getId().getLocalPart() == p.getChangeSet()) {
+            if (a.getId().getLocalPart().equals(p.getChangeSet())) {
                 activityExists = true;
             }
         }
@@ -290,11 +325,14 @@ public class ProvWriter {
         if (primitive.getTags() != null) { //if the primitive has tags
             for (String[] tag : primitive.getTags()) {//for every tag...
 
-                if (tag[0] == "created by" && !SWAgentExists) { //if it is a 'created by' tag and no software agent has already been created for it
+                if (tag[0].equals("k = created_by") && !SWAgentExists) { //if it is a 'created by' tag and no software agent has already been created for it
 //                    Agent sw=provFactory.newAgent(new SoftwareAgent());
 //                    agent = provFactory.newAgent(getQname(tag[1], OSMPREFIX));
                     agent = oprov.createSoftwareAgent();//create the agent
-                    agent.setId(getQname(tag[1], OSMPREFIX));//assign it a qname
+
+                    String MrPloppy=cleanForProvN_QName(tag[1]);
+
+                    agent.setId(getQname(cleanForProvN_QName(tag[1]), OSMPREFIX));//assign it a qname
                     mSWAgents.add(agent);//add it to the list
                     agentCreated = true;
                 }
@@ -303,6 +341,24 @@ public class ProvWriter {
 
         return agentCreated;
     }
+
+
+
+private String cleanForProvN_QName(String s){
+        return getTagValue(s).replace(" ","");
+}
+
+    private String getTagValue(String tag){
+
+
+        return tag.substring(tag.indexOf("=")+2);
+
+
+
+    }
+
+
+
 
 
 }
