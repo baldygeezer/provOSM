@@ -44,6 +44,10 @@ public class ProvWriter {
         mNamespace.addKnownNamespaces();
         mNamespace.register(OSMPREFIX, "htttp://openstreetmap.org/");
         mNamespace.register(WAYPREFIX, "http://wiki.openstreetmap.org/wiki/Way");
+        mNamespace.register(USRPREFIX, "http://wiki.openstreetmap.org/wiki/user");
+        mNamespace.register(CHANGESET,"http://wiki.openstreetmap.org/wiki/changeset");
+
+
 
         provFactory = InteropFramework.newXMLProvFactory();
         mDocument = provFactory.newDocument();
@@ -89,13 +93,12 @@ public class ProvWriter {
 
     public void getDocument() {
         for (OSM_Primitive[] v : mOSM_Extractor.getVersionedElements("k = building")) {
-
             mDocument.getStatementOrBundle().addAll(create_bundle(v, OSMPREFIX));
-
         }
 
         mDocument.getStatementOrBundle().addAll(getAgentBundle());
         mDocument.getStatementOrBundle().addAll(getActivityBundle());
+
         mDocument.setNamespace(mNamespace);
         documentCreated = true;
 
@@ -126,7 +129,7 @@ public class ProvWriter {
 
 
     private QualifiedName getQname(String name, String prefix) {
-        return mNamespace.qualifiedName("OSM", name, provFactory);
+        return mNamespace.qualifiedName(prefix, name, provFactory);
     }
 
     private void createEntities(OSM_Primitive[] entities) {
@@ -152,11 +155,11 @@ public class ProvWriter {
 
             //if this is the original...
             if (versions[i].getVersion() == 1) {//store it as original
-                original = provFactory.newEntity(getQname(versions[i].getId(), prefix), "way");//need to handle labels better
+                original = provFactory.newEntity(getQname(versions[i].getId()+"V"+versions[i].getVersion(), WAYPREFIX), "way");//need to handle labels better
                 statements.add(original);
                 //add software agents here
             } else {//if it is a later version
-                Entity entity = provFactory.newEntity(getQname(versions[i].getId(), prefix), "way");//store it as local var
+                Entity entity = provFactory.newEntity(getQname(versions[i].getId()+"V"+versions[i].getVersion(), WAYPREFIX), "way");//store it as local var
                 derivatives[versions[i].getVersion() - 2] = entity;//put it into an index in the array that correspond to its version (v2 goes in index 0)
 
                 statements.add(entity);
@@ -242,17 +245,14 @@ public class ProvWriter {
     }
 
 
-    private ArrayList<StatementOrBundle> getActivityBundle(){
+    private ArrayList<StatementOrBundle> getActivityBundle() {
         ArrayList<StatementOrBundle> statements = new ArrayList<>();
-        for (Activity a:mActivities){
+        for (Activity a : mActivities) {
             statements.add(a);
         }
         return statements;
 
     }
-
-
-
 
 
     /**
@@ -330,7 +330,7 @@ public class ProvWriter {
 //                    agent = provFactory.newAgent(getQname(tag[1], OSMPREFIX));
                     agent = oprov.createSoftwareAgent();//create the agent
 
-                    String MrPloppy=cleanForProvN_QName(tag[1]);
+                    String MrPloppy = cleanForProvN_QName(tag[1]);
 
                     agent.setId(getQname(cleanForProvN_QName(tag[1]), OSMPREFIX));//assign it a qname
                     mSWAgents.add(agent);//add it to the list
@@ -343,22 +343,17 @@ public class ProvWriter {
     }
 
 
+    private String cleanForProvN_QName(String s) {
+        return getTagValue(s).replace(" ", "");
+    }
 
-private String cleanForProvN_QName(String s){
-        return getTagValue(s).replace(" ","");
-}
-
-    private String getTagValue(String tag){
+    private String getTagValue(String tag) {
 
 
-        return tag.substring(tag.indexOf("=")+2);
-
+        return tag.substring(tag.indexOf("=") + 2);
 
 
     }
-
-
-
 
 
 }
