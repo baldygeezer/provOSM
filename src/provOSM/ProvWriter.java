@@ -109,22 +109,23 @@ public class ProvWriter {
 
         if (documentCreated) {
             // System.out.println(mDocument.toString());
-            convertToProvN(mDocument, "");
+            convertToProvN(mDocument, "data/out/");
 
         } else {
 
 
             getDocument();
             //System.out.println(mDocument.toString());
-            convertToProvN(mDocument, "");
+            convertToProvN(mDocument, "data/out/");
         }
     }
 
 
     public void convertToProvN(Document document, String file) {
         InteropFramework interOp = new InteropFramework();
-        // interOp.writeDocument(file, document);
+        //interOp.writeDocument(file,ProvFormat.PNG, document);
         interOp.writeDocument(System.out, ProvFormat.PROVN, document);
+
     }
 
 
