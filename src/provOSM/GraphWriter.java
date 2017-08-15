@@ -2,6 +2,7 @@ package provOSM;
 
 import com.hendrix.erdos.graphs.SimpleDirectedGraph;
 import com.hendrix.erdos.types.Edge;
+import com.hendrix.erdos.types.IVertex;
 import com.hendrix.erdos.types.Vertex;
 import org.openprovenance.prov.interop.InteropFramework;
 import org.openprovenance.prov.model.*;
@@ -60,10 +61,11 @@ public class GraphWriter {
         //this factory is from the xml framework; can't use the interop factory for generating some prov; Why?
         oprov = new org.openprovenance.prov.xml.ObjectFactory();
 
-       /// mSWAgents = new ArrayList<>();
+        /// mSWAgents = new ArrayList<>();
         mActivities = new ArrayList<>();
         mOSM_Extractor = osm_extractor;
     }
+
     private QualifiedName getQname(String name, String prefix) {
         return mNamespace.qualifiedName(prefix, name, provFactory);
     }
@@ -79,44 +81,62 @@ public class GraphWriter {
         int[] feature = new int[3];//the list to return
         ArrayList<String> agents = new ArrayList<>();
 
-        Vertex lastVertex;//the vertextes for verision drivation
-        Vertex thisVertex;
-
-for(OSM_Primitive p:versions){
-    String agentTag=p.getUid();
-
-    //loop to make the derivations
-    if (p.getVersion()==1){//make node for the original if we are on version 1
-        graph.addVertex(new Vertex(p.getId()+"_original"));
-    }
-    if (p.getVersion()>1){//if the version is >1 then it isn't the orginal and needs a derivation
-        String lastVertexTag=p.getId()+"_v"+(p.getVersion()-1);
-        String thisVertexTag=p.getId()+"_v"+p.getVersion();
-        lastVertex=new Vertex(lastVertexTag);
-        thisVertex=new Vertex(thisVertexTag);
-        graph.addVertex(thisVertex);
-        graph.addEdge(thisVertex,lastVertex);
-        graph.getEdge(thisVertex,lastVertex).setTag("wasDerivedFrom");
+       Vertex lastVertex = null;// the last vertex as the destination for the wasDerivedFrom edge
+        for (OSM_Primitive p : versions) {
 
 
-    }
+            //loops to make the derivations
+            if (p.getVersion() == 1) {//make node for the original if we are on version 1
+                Vertex originalVertex=new Vertex(p.getId() + "entity_original");
+                graph.addVertex(originalVertex);
+                lastVertex=originalVertex;//store the current vertex as the last one ready for next time round
 
-    if(!agents.contains(agentTag)){
-     agents.add(agentTag);
-    }
+            }
+            if (p.getVersion() == 2) { //if the version is 2 then it isn't the original and needs a wasDerivedFrom edge pointing at the original
+                String thisVertexTag = "entity_"+ p.getId() + "_v" + p.getVersion();
+                Vertex thisVertex = new Vertex(thisVertexTag);
+                graph.addVertex(thisVertex);
+                graph.addEdge(thisVertex, lastVertex);//create the edge
+                graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");//tag it with the prov relation
+                lastVertex=thisVertex;//store the current vertex as the last one ready for next time round
+            }
+
+            if (p.getVersion() > 2) {//if the version >2 then we just create derivations form the last verion
+                String lastVertexTag = "entity_"+ p.getId() + "_v" + (p.getVersion() - 1);
+                String thisVertexTag = "entity_"+ p.getId() + "_v" + p.getVersion();
+                Vertex thisVertex = new Vertex(thisVertexTag);
+                graph.addVertex(thisVertex);
+                graph.addEdge(thisVertex, lastVertex);
+                graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");
+                lastVertex=thisVertex;
+
+            }
+
+//create the Agent Vertices
+
+            if (!agents.contains(p.getUid())) { //if we haven't already created an agent(no string stored on the list)
+                Vertex agentVertex=new Vertex("agent_");//create and agent vertex
+                graph.addVertex(agentVertex);
+                agents.add(p.getUid());//store the agent id so we know we already made one
+                graph.addEdge(agentVertex,thisVertex);
+            }else{//else we made one
+                for(IVertex v:graph.vertices()){
+                    if (v.getTag().equals("agent_"+p.getUid())){
+                      Vertex agentVertex=(Vertex)v;
+
+                    }
+                }
+
+            }
 
 
+            Vertex v = new Vertex();
 
 
-    Vertex v = new Vertex();
-
-
-
-}
+        }
 
         return feature;
     }
-
 
 
     /**
