@@ -29,6 +29,12 @@ public class GraphWriterTest {
             new OSM_Way("232345", "26636", "345", "wibble", "anytime", "3", tags, nodes),
             new OSM_Way("232345", "26636", "345", "wibble", "anytime", "4", tags, nodes)};
 
+    private static OSM_Primitive[] way4 = {
+            new OSM_Way("232345", "26636", "345", "wibble", "anytime", "1", tags, nodes),
+            new OSM_Way("232345", "26636", "345", "wibble", "anytime", "2", tags, nodes),
+            new OSM_Way("232345", "26636", "345", "wibble", "anytime", "3", tags, nodes),
+            new OSM_Way("232345", "26636", "345", "wibble", "anytime", "4", tags, nodes)};
+
     private static OSM_Primitive[][] waylist = {way1, way2, way3};
     private  static GraphWriter graphWriter;
 
@@ -37,7 +43,7 @@ public class GraphWriterTest {
 
 
         String[] s = {"wibble", "woo"};
-        String[] y = {"created by", "woo"};
+        String[] y = {"created_by", "woo"};
         tags.add(s);
         tags.add(y);
         graphWriter=new GraphWriter(new OSM_Extractor("testfixture.osm"));
