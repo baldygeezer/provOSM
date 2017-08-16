@@ -7,18 +7,9 @@ import com.hendrix.erdos.types.Vertex;
 import org.openprovenance.prov.interop.InteropFramework;
 import org.openprovenance.prov.model.*;
 import org.openprovenance.prov.model.Activity;
-import org.openprovenance.prov.model.Agent;
 import org.openprovenance.prov.model.Document;
-import org.openprovenance.prov.model.Entity;
-import org.openprovenance.prov.model.ObjectFactory;
 import org.openprovenance.prov.model.ProvFactory;
 import org.openprovenance.prov.model.QualifiedName;
-import org.openprovenance.prov.model.WasAssociatedWith;
-import org.openprovenance.prov.model.WasAttributedTo;
-import org.openprovenance.prov.model.WasDerivedFrom;
-import org.openprovenance.prov.xml.*;
-import com.hendrix.erdos.*;
-import org.openrdf.query.algebra.Str;
 
 import java.util.ArrayList;
 
@@ -81,61 +72,99 @@ public class GraphWriter {
         int[] feature = new int[3];//the list to return
         ArrayList<String> agents = new ArrayList<>();
 
-       Vertex lastVertex = null;// the last vertex as the destination for the wasDerivedFrom edge
+        Vertex lastVertex = null;// the last vertex as the destination for the wasDerivedFrom edge
         for (OSM_Primitive p : versions) {
 
 
             //loops to make the derivations
             if (p.getVersion() == 1) {//make node for the original if we are on version 1
-                Vertex originalVertex=new Vertex(p.getId() + "entity_original");
+                Vertex originalVertex = new Vertex(p.getId() + "entity_original");
                 graph.addVertex(originalVertex);
-                lastVertex=originalVertex;//store the current vertex as the last one ready for next time round
+                addUserAgent(graph, originalVertex, agents, p);
+                addEditSession(graph, originalVertex, agents, p);
+                lastVertex = originalVertex;//store the current vertex as the last one ready for next time round
 
             }
             if (p.getVersion() == 2) { //if the version is 2 then it isn't the original and needs a wasDerivedFrom edge pointing at the original
-                String thisVertexTag = "entity_"+ p.getId() + "_v" + p.getVersion();
+                String thisVertexTag = "entity_" + p.getId() + "_v" + p.getVersion();
                 Vertex thisVertex = new Vertex(thisVertexTag);
                 graph.addVertex(thisVertex);
                 graph.addEdge(thisVertex, lastVertex);//create the edge
                 graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");//tag it with the prov relation
-                lastVertex=thisVertex;//store the current vertex as the last one ready for next time round
+                addUserAgent(graph, thisVertex, agents, p);
+                addEditSession(graph, thisVertex, agents, p);
+                lastVertex = thisVertex;//store the current vertex as the last one ready for next time round NOTE to self: DO THIS LAST!!
+
             }
 
             if (p.getVersion() > 2) {//if the version >2 then we just create derivations form the last verion
-                String lastVertexTag = "entity_"+ p.getId() + "_v" + (p.getVersion() - 1);
-                String thisVertexTag = "entity_"+ p.getId() + "_v" + p.getVersion();
+                String lastVertexTag = "entity_" + p.getId() + "_v" + (p.getVersion() - 1);
+                String thisVertexTag = "entity_" + p.getId() + "_v" + p.getVersion();
                 Vertex thisVertex = new Vertex(thisVertexTag);
                 graph.addVertex(thisVertex);
                 graph.addEdge(thisVertex, lastVertex);
                 graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");
-                lastVertex=thisVertex;
+                addUserAgent(graph, thisVertex, agents, p);//create an assign a user agent
+                addEditSession(graph, thisVertex, agents, p);
+                lastVertex = thisVertex;
 
             }
-
-//create the Agent Vertices
-
-            if (!agents.contains(p.getUid())) { //if we haven't already created an agent(no string stored on the list)
-                Vertex agentVertex=new Vertex("agent_");//create and agent vertex
-                graph.addVertex(agentVertex);
-                agents.add(p.getUid());//store the agent id so we know we already made one
-                graph.addEdge(agentVertex,thisVertex);
-            }else{//else we made one
-                for(IVertex v:graph.vertices()){
-                    if (v.getTag().equals("agent_"+p.getUid())){
-                      Vertex agentVertex=(Vertex)v;
-
-                    }
-                }
-
-            }
-
-
-            Vertex v = new Vertex();
 
 
         }
 
         return feature;
+    }
+
+    // cretaes and assigns a useragent
+    private void addUserAgent(SimpleDirectedGraph graph, Vertex thisVertex, ArrayList<String> agents, OSM_Primitive p) {
+        if (!agents.contains(p.getUid())) { //if we haven't already created an agent(no string stored on the list)
+            Vertex agentVertex = new Vertex("agent_" + p.getUid());//create and agent vertex
+            graph.addVertex(agentVertex);
+            agents.add(p.getUid());//store the agent id so we know we already made one
+
+            Edge edge = new Edge(thisVertex, agentVertex, Edge.EDGE_DIRECTION.DIRECTED);//make an edge
+            edge.setTag("WasAttributedTo");//tag it
+            graph.addEdge(edge);//add it to the graph
+        } else {//else we made one
+            for (IVertex v : graph.vertices()) {
+                if (v.getTag().equals("agent_" + p.getUid())) {
+                    Vertex agentVertex = (Vertex) v;
+                    Edge edge = new Edge(thisVertex, agentVertex, Edge.EDGE_DIRECTION.DIRECTED);//make an edge
+                    edge.setTag("WasAttributedTo");//tag it
+                    graph.addEdge(edge);//add it to the graph
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates and assigns asoftware agent
+     *
+     * @param graph
+     * @param thisVertex
+     * @param swAgents
+     * @param p
+     */
+    private void addEditSession(SimpleDirectedGraph graph, Vertex thisVertex, ArrayList<String> swAgents, OSM_Primitive p) {
+        for (String[] tag : p.getTags()) {//for each tag
+            if (tag[0].equals("created_by")) {//if the key is a 'created_by'...
+                if (!swAgents.contains(tag[1])) {///check if we already made an agent by looking for it on a list of ones we made. if not...
+                    Vertex swAgentVertex = new Vertex("swAgent_" + tag[1]);//then make one if there
+                    graph.addVertex(swAgentVertex);// add it to the graph
+                    graph.addEdge(swAgentVertex, thisVertex);//ad an edge
+                    swAgents.add(tag[1]);//add it to the list of ones we've made
+                } else {//if we did make one
+                    for (IVertex v : graph.vertices()) {//look for it in the graph
+                        if (v.getTag().equals("swAgent_" + tag[1])) {///if we find it
+                            Vertex swAgentVertex = (Vertex) v;  //copy the reference for it
+                            graph.addEdge(swAgentVertex, thisVertex);//add an edge to it
+                        }
+                    }
+                }
+
+            }
+        }
     }
 
 
