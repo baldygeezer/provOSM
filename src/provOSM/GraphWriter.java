@@ -1,9 +1,15 @@
 package provOSM;
 
+import com.hendrix.erdos.algorithms.AllPairsShortPathResult;
+import com.hendrix.erdos.algorithms.BellmanFordShortestPath;
+import com.hendrix.erdos.algorithms.Johnson;
+import com.hendrix.erdos.algorithms.ShortestPathsTree;
+import com.hendrix.erdos.graphs.DirectedGraph;
 import com.hendrix.erdos.graphs.SimpleDirectedGraph;
 import com.hendrix.erdos.types.Edge;
 import com.hendrix.erdos.types.IVertex;
 import com.hendrix.erdos.types.Vertex;
+import com.hendrix.erdos.utils.SVertexUtils;
 import org.openprovenance.prov.interop.InteropFramework;
 import org.openprovenance.prov.model.*;
 import org.openprovenance.prov.model.Activity;
@@ -76,12 +82,12 @@ public class GraphWriter {
      * @param prefix unused - if we need to visualise we will use it to make PROV labels
      * @return an int[] containing graph metrics
      */
-    protected int[] create_feature(OSM_Primitive[] versions, String prefix) {
+    protected double[] create_feature(OSM_Primitive[] versions, String prefix) {
         SimpleDirectedGraph graph = new SimpleDirectedGraph();//the subgraph
-        int[] feature = new int[3];//the list to return
+
         ArrayList<String> agents = new ArrayList<>();
         ArrayList<String> edits = new ArrayList<>();
-        ArrayList<String> swAgents=new ArrayList<>();
+        ArrayList<String> swAgents = new ArrayList<>();
         Vertex lastVertex = null;// the last vertex as the destination for the wasDerivedFrom edge
         for (OSM_Primitive p : versions) {
 
@@ -92,7 +98,7 @@ public class GraphWriter {
                 graph.addVertex(originalVertex);
                 //addUserAgent(graph, originalVertex, agents, p);
                 //addSoftwareAgent(graph, originalVertex, agents, p);
-                addEditSession(graph, originalVertex, addUserAgent(graph, originalVertex, agents, p), edits,swAgents, p);
+                addEditSession(graph, originalVertex, addUserAgent(graph, originalVertex, agents, p), edits, swAgents, p);
 
                 lastVertex = originalVertex;//store the current vertex as the last one ready for next time round
 
@@ -105,7 +111,7 @@ public class GraphWriter {
                 graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");//tag it with the prov relation
                 // addUserAgent(graph, thisVertex, agents, p);
                 // addSoftwareAgent(graph, thisVertex, agents, p);
-                addEditSession(graph, thisVertex, addUserAgent(graph, thisVertex, agents, p), edits,swAgents, p);
+                addEditSession(graph, thisVertex, addUserAgent(graph, thisVertex, agents, p), edits, swAgents, p);
 
                 lastVertex = thisVertex;//store the current vertex as the last one ready for next time round NOTE to self: DO THIS LAST!!
 
@@ -120,24 +126,57 @@ public class GraphWriter {
                 graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");
                 // addUserAgent(graph, thisVertex, agents, p);//create an assign a user agent
                 //addSoftwareAgent(graph, thisVertex, agents, p);
-                addEditSession(graph, thisVertex, addUserAgent(graph, thisVertex, agents, p), edits, swAgents,p);
+                addEditSession(graph, thisVertex, addUserAgent(graph, thisVertex, agents, p), edits, swAgents, p);
                 lastVertex = thisVertex;
 
             }
 
 
         }
-graph.print();
-        return feature;
-    }
+        graph.print();
 
-
-    private void analise(SimpleDirectedGraph graph){
+        return analise(graph);
 
 
     }
 
 
+    private double[] analise(SimpleDirectedGraph graph) {
+        double[] features = {0, 0, 0};
+
+        AllPairsShortPathResult res1=new Johnson(graph).applyAlgorithm();
+        Vertex original=null;
+        for (IVertex v:graph.vertices()){
+            if(v.getTag().contains("orig")){
+                original=(Vertex)v;
+            }
+        }
+
+        ShortestPathsTree res = new BellmanFordShortestPath(graph).setStartVertex(original).applyAlgorithm();
+
+        res.print();
+        double totAgentInDegree = 0;
+        int ctr = 0;
+
+        for (IVertex v : graph.vertices()) {
+            if (v.getTag().contains("agent")) {
+
+                totAgentInDegree+=graph.inDegreeOfVertex(v);
+                ctr++;
+            }
+        }
+        ctr = ctr==0 ? 1:ctr;
+        features[0]=totAgentInDegree/ctr;
+
+        features[1]=res.edges().size()/graph.edges().size();
+
+        //features[2]=res1.
+        features[2]=2.2;
+        System.out.println(features[0]);
+        System.out.println(features[1]);
+
+        return features;
+    }
 
 
     /**
@@ -174,7 +213,7 @@ graph.print();
     }
 
 
-    private void addEditSession(SimpleDirectedGraph graph, Vertex thisVertex, Vertex agentVertex, ArrayList<String> edits,ArrayList<String>swAgents, OSM_Primitive p) {
+    private void addEditSession(SimpleDirectedGraph graph, Vertex thisVertex, Vertex agentVertex, ArrayList<String> edits, ArrayList<String> swAgents, OSM_Primitive p) {
         if (!edits.contains(p.getChangeSet())) {//if there is no matching changesetId on the list we havent already made one
             Vertex editVertex = new Vertex("activity_" + p.getChangeSet());
             graph.addVertex(editVertex);
@@ -183,7 +222,7 @@ graph.print();
             Edge userEdge = new Edge(editVertex, agentVertex, Edge.EDGE_DIRECTION.DIRECTED);     //the wasassociateWith edge (to userAgent)
             graph.addEdge(editEdge);
             graph.addEdge(userEdge);
-            addSoftwareAgent(graph,editVertex,swAgents,p);//
+            addSoftwareAgent(graph, editVertex, swAgents, p);//
 
         } else {//if we already have this changeset in the graph and just need to getit and addeg an edge to it
             for (IVertex v : graph.vertices()) {//look though the list of vertices in the graph
@@ -192,7 +231,7 @@ graph.print();
                     Edge userEdge = new Edge(v, agentVertex, Edge.EDGE_DIRECTION.DIRECTED);     //the wasassociateWith edge (to userAgent)
                     graph.addEdge(editEdge);
                     graph.addEdge(userEdge);
-                    addSoftwareAgent(graph,(Vertex) v,swAgents,p);//now we have our activity we can associate it with a software agent
+                    addSoftwareAgent(graph, (Vertex) v, swAgents, p);//now we have our activity we can associate it with a software agent
                 }
             }
         }
