@@ -76,6 +76,13 @@ public class GraphWriter {
         return mNamespace.qualifiedName(prefix, name, provFactory);
     }
 
+
+    public runAnalysis(){
+        forea
+    }
+
+
+
     /***
      *
      * @param versions an array of OSM_Primitive ordered by version
