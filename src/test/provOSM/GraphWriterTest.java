@@ -30,10 +30,12 @@ public class GraphWriterTest {
             new OSM_Way("232345", "26636", "345", "wibble", "anytime", "4", tags, nodes)};
 
     private static OSM_Primitive[] way4 = {
-            new OSM_Way("232345", "26636", "345", "wibble", "anytime", "1", tags, nodes),
+            new OSM_Way("232345", "2636", "345", "wibble", "anytime", "1", tags, nodes),
             new OSM_Way("232345", "26636", "345", "wibble", "anytime", "2", tags, nodes),
-            new OSM_Way("232345", "26636", "345", "wibble", "anytime", "3", tags, nodes),
-            new OSM_Way("232345", "26636", "345", "wibble", "anytime", "4", tags, nodes)};
+            new OSM_Way("232345", "2663", "3457", "wibble", "anytime", "3", tags, nodes),
+            new OSM_Way("232345", "6636", "345", "wibble", "anytime", "4", tags, nodes),
+            new OSM_Way("232345", "266", "3457", "wibble", "anytime", "5", tags, nodes),
+            new OSM_Way("232345", "266369", "3458", "wibble", "anytime", "6", tags, nodes)};
 
     private static OSM_Primitive[][] waylist = {way1, way2, way3};
     private  static GraphWriter graphWriter;
@@ -62,7 +64,7 @@ public class GraphWriterTest {
     @org.junit.Test
     public void createVectorCreatesGraphWithCCorrectNumNodes() throws Exception {
 
-        graphWriter.create_feature(way3, "wibble");
+        graphWriter.create_feature(way4, "wibble");
 
 
     }

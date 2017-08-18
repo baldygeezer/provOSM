@@ -1,11 +1,7 @@
 package provOSM;
 
-import com.hendrix.erdos.algorithms.AllPairsShortPathResult;
-import com.hendrix.erdos.algorithms.BellmanFordShortestPath;
-import com.hendrix.erdos.algorithms.Johnson;
-import com.hendrix.erdos.algorithms.ShortestPathsTree;
-import com.hendrix.erdos.graphs.DirectedGraph;
-import com.hendrix.erdos.graphs.SimpleDirectedGraph;
+import com.hendrix.erdos.algorithms.*;
+import com.hendrix.erdos.graphs.*;
 import com.hendrix.erdos.types.Edge;
 import com.hendrix.erdos.types.IVertex;
 import com.hendrix.erdos.types.Vertex;
@@ -27,6 +23,7 @@ import com.hendrix.erdos.*;
 import org.openrdf.query.algebra.Str;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Created by baldy on 14/08/17.
@@ -77,10 +74,9 @@ public class GraphWriter {
     }
 
 
-    public runAnalysis(){
-        forea
-    }
-
+    // public runAnalysis(){
+    //   forea
+    //}
 
 
     /***
@@ -141,7 +137,7 @@ public class GraphWriter {
 
         }
         graph.print();
-
+        maxFiniteDistance(graph);
         return analise(graph);
 
 
@@ -151,39 +147,158 @@ public class GraphWriter {
     private double[] analise(SimpleDirectedGraph graph) {
         double[] features = {0, 0, 0};
 
-        AllPairsShortPathResult res1=new Johnson(graph).applyAlgorithm();
-        Vertex original=null;
-        for (IVertex v:graph.vertices()){
-            if(v.getTag().contains("orig")){
-                original=(Vertex)v;
+        AllPairsShortPathResult res1 = new Johnson(graph).applyAlgorithm();
+        Vertex original = null;
+        for (IVertex v : graph.vertices()) {
+            if (v.getTag().contains("orig")) {
+                original = (Vertex) v;
             }
         }
 
         ShortestPathsTree res = new BellmanFordShortestPath(graph).setStartVertex(original).applyAlgorithm();
 
-        res.print();
+        //  res.print();
+
+
+        features[1] = res.edges().size() / graph.edges().size();
+
+        //features[2]=res1.
+        features[2] = 2.2;
+        System.out.println(features[0]);
+        System.out.println(features[1]);
+        maxFiniteDistance(graph);
+        return features;
+    }
+
+
+    private double averageAgentInDegree(SimpleDirectedGraph graph) {
+
+
         double totAgentInDegree = 0;
         int ctr = 0;
 
         for (IVertex v : graph.vertices()) {
             if (v.getTag().contains("agent")) {
 
-                totAgentInDegree+=graph.inDegreeOfVertex(v);
+                totAgentInDegree += graph.inDegreeOfVertex(v);
                 ctr++;
             }
         }
-        ctr = ctr==0 ? 1:ctr;
-        features[0]=totAgentInDegree/ctr;
+        ctr = ctr == 0 ? 1 : ctr;
+        return totAgentInDegree / ctr;
 
-        features[1]=res.edges().size()/graph.edges().size();
-
-        //features[2]=res1.
-        features[2]=2.2;
-        System.out.println(features[0]);
-        System.out.println(features[1]);
-
-        return features;
     }
+
+    /***
+     * Convert a Directed graph into an undirected graph. Returns a new graph object cretad with the data of the parameter
+     * @param dg SimpleDirectedGraph
+     * @return SimpleGraph
+     */
+    private SimpleGraph graphConvert(SimpleDirectedGraph dg) {
+
+        SimpleGraph sg = new SimpleGraph();
+
+        for (IVertex v : dg.vertices()) {//for every vertex in the old graph
+
+            Vertex nv = new Vertex(v.getTag());//make a new one with the same tag
+            sg.addVertex(nv);//add it to the new graph
+
+        }
+
+        for (Edge e : dg.edges()) {//for each edge in the old graph
+            Vertex SV = getVertexByTag(sg, e.getV1().getTag());//get the corresponding edges in the new one
+            Vertex EV = getVertexByTag(sg, e.getV2().getTag());
+
+            Edge ne = new Edge(SV, EV, Edge.EDGE_DIRECTION.UNDIRECTED);
+            sg.addEdge(ne);
+        }
+
+
+        return sg;
+
+    }
+
+    /***
+     * gets a vertex from a graph using its tag
+     * @param graph
+     * @param tag
+     * @return
+     */
+    private Vertex getVertexByTag(IGraph graph, String tag) {
+        Vertex nv = null;
+
+        for (IVertex v : graph.vertices()) {
+
+            if (v.getTag().contains(tag)) {
+                nv = (Vertex) v;
+            }
+        }
+        return nv;
+    }
+
+
+    private void maxFiniteDistance(SimpleDirectedGraph graph) {
+
+
+        ArrayList<Float> finres = new ArrayList<>();
+        ArrayList<Float> res = new ArrayList<>();
+        String[] nTypes = {"agent", "swAgent", "activity", "entity"};
+        double[] mfd = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        int ctr = 0;
+        SimpleGraph g = graphConvert(graph);
+
+
+        for (String s : nTypes) {//for every string in the list of node types, use it as a source node s
+
+            for (String d : nTypes) {//for every string(2) in the list use it as a destinatin node d
+
+
+                if (s != d) {//if they are not the same node type tag
+
+
+                    for (IVertex vs : g.vertices()) {//look at each vertex
+                        if (vs.getTag().contains(s)) {//is it is a source node
+                            ShortestPathsTree result = new DijkstraShortestPath(g).setStartVertex(vs).applyAlgorithm();//use it as the satrt not for the shortest path tree
+
+                            for (IVertex vd : graph.vertices()) {//then look a tag containing our non-matching string
+                                if (vd.getTag().contains(d)) { //we found one if it is our non matching destination
+                                    res.add(result.distanceOf(vd));//add its distance from the source to the list
+
+                                }
+                            }
+
+
+                        }
+                    }
+
+                    float min = 0;
+
+                    for (float f : res) {
+                        min = f < min ? f : min;
+                    }
+                    finres.add(min);
+                    res = new ArrayList<>();
+                }
+
+
+            }
+
+
+        }
+
+
+        g.print();
+
+        System.out.println("poopy");
+        for (float i : finres) {
+
+            System.out.println(i);
+        }
+
+
+    }
+
+    //  private void diameter(ShortestPathsTree)
 
 
     /**
