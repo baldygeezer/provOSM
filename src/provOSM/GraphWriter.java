@@ -145,35 +145,57 @@ public class GraphWriter {
 
 
     private double[] analise(SimpleDirectedGraph graph) {
-        double[] features = {0, 0, 0};
+        double[] features = new double[18];
+        int ctr = 0;
 
-        AllPairsShortPathResult res1 = new Johnson(graph).applyAlgorithm();
-        Vertex original = null;
-        for (IVertex v : graph.vertices()) {
-            if (v.getTag().contains("orig")) {
-                original = (Vertex) v;
-            }
+        double[] mfd = maxFiniteDistance(graph);
+        for (double d : mfd) {
+            features[ctr] = mfd[ctr];
+            ctr++;
         }
 
-        ShortestPathsTree res = new BellmanFordShortestPath(graph).setStartVertex(original).applyAlgorithm();
 
-        //  res.print();
-
-
-        features[1] = res.edges().size() / graph.edges().size();
-
-        //features[2]=res1.
-        features[2] = 2.2;
-        System.out.println(features[0]);
-        System.out.println(features[1]);
-        maxFiniteDistance(graph);
         return features;
     }
 
+    private void getDiameter(SimpleDirectedGraph graph) {
+        SimpleGraph g = getUndirectedGraph(graph);
+        IVertex sv;
+        IVertex ev=null;
+        int numentities = 0;
+        int ctr=1;
+        for (IVertex v : g.vertices()) {
+            if (v.getTag().contains("original")) {
+                sv = v;
+            }
+        }
+
+        for (IVertex v : g.vertices()) {
+            if (v.getTag().contains("entity")) {
+                numentities++;
+            }
+        }
+        for (IVertex v:g.vertices()) {
+            if(v.getTag().contains("original")){
+                if(ctr==numentities){
+                    ev=v;
+                    ctr++;
+                }
+
+            }
+    }
+        for (IVertex v:g.getNeighborsOf(ev)){
+            if(v.getTag().contains("swAgent")){
+                ev=v;
+            }
+        }
+    // just so you remember - now compute the path between sv and ev
+    }
+
+
+
 
     private double averageAgentInDegree(SimpleDirectedGraph graph) {
-
-
         double totAgentInDegree = 0;
         int ctr = 0;
 
@@ -210,8 +232,8 @@ public class GraphWriter {
             Vertex SV = getVertexByTag(sg, e.getV1().getTag());//get the corresponding edges in the new one
             Vertex EV = getVertexByTag(sg, e.getV2().getTag());
 
-            Edge ne = new Edge(SV, EV, Edge.EDGE_DIRECTION.DIRECTED,1.00f);
-            Edge ne2 = new Edge(EV, SV, Edge.EDGE_DIRECTION.DIRECTED,1.00f);
+            Edge ne = new Edge(SV, EV, Edge.EDGE_DIRECTION.DIRECTED, 1.00f);
+            Edge ne2 = new Edge(EV, SV, Edge.EDGE_DIRECTION.DIRECTED, 1.00f);
             sg.addEdge(ne);
             sg.addEdge(ne2);
         }
@@ -242,15 +264,13 @@ public class GraphWriter {
             Vertex SV = getVertexByTag(sg, e.getV1().getTag());//get the corresponding edges in the new one
             Vertex EV = getVertexByTag(sg, e.getV2().getTag());
 
-            Edge ne = new Edge(SV, EV, Edge.EDGE_DIRECTION.UNDIRECTED,1.00f);
+            Edge ne = new Edge(SV, EV, Edge.EDGE_DIRECTION.UNDIRECTED, 1.00f);
 
             sg.addEdge(ne);
 
         }
         return sg;
     }
-
-
 
 
     /***
@@ -271,68 +291,52 @@ public class GraphWriter {
         return nv;
     }
 
-
-    private void maxFiniteDistance(SimpleDirectedGraph graph) {
-
-
+    /**
+     * Calculated the greated minimum fineite distance between two nodes of different types
+     * it will return 12 values, one of eac
+     *
+     * @param graph
+     * @return
+     */
+    private double[] maxFiniteDistance(SimpleDirectedGraph graph) {
         ArrayList<Float> finres = new ArrayList<>();
-        ArrayList<Float> res = new ArrayList<>();
+        ArrayList<Float> res = new ArrayList<>();//stor the collections of min finite distances between node types
         String[] nTypes = {"agent", "swAgent", "activity", "entity"};
-        double[] mfd = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        double[] mfd = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         int ctr = 0;
         SimpleDirectedGraph g = getBiDirectionalGraph(graph);//we need a graph that is effctively undirected so convert to a graph that has two vertices going each way
-
-
         for (String s : nTypes) {//for every string in the list of node types, use it as a source node s
-
             for (String d : nTypes) {//for every string(2) in the list use it as a destinatin node d
-
-
-                if (s != d) {//if they are not the same node type tag
-
-
-                    for (IVertex vs : g.vertices()) {//look at each vertex
-                        if (vs.getTag().contains(s)) {//is it is a source node
-                            // ShortestPathsTree result = new DijkstraShortestPath(g).setStartVertex(vs).applyAlgorithm();//use it as the satrt not for the shortest path tree
-                            AllPairsShortPathResult result = (new FloydWarshall(g)).applyAlgorithm();
-                            for (IVertex vd : g.vertices()) {//then look a tag containing our non-matching string
-                                if (vd.getTag().contains(d)) { //we found one if it is our non matching destination
-                                    float r = result.shortDistanceBetween(vs, vd);
-                                    res.add(r);
-                                    //res.add(result.distanceOf(vd));//add its distance from the source to the list
-
-                                }
+                // if (s != d) {//if they are not the same node type tag
+                for (IVertex vs : g.vertices()) {//look at each vertex
+                    if (vs.getTag().contains(s)) {//is it is a source node
+                        // ShortestPathsTree result = new DijkstraShortestPath(g).setStartVertex(vs).applyAlgorithm();//use it as the satrt not for the shortest path tree
+                        AllPairsShortPathResult result = (new FloydWarshall(g)).applyAlgorithm();
+                        for (IVertex vd : g.vertices()) {//then look a tag containing our non-matching string
+                            if (vd.getTag().contains(d)) { //we found one if it is our non matching destination
+                                float r = result.shortDistanceBetween(vs, vd);//...so record the min distance to the start node
+                                res.add(r);//store it
+                                //res.add(result.distanceOf(vd));//add its distance from the source to the list
                             }
-
-
                         }
                     }
-
-                   float max = 0;
-
-                    for (float f : res) {
-                        max = f > max ? f : max;
-                    }
-                    finres.add(max);
-                    res = new ArrayList<>();
                 }
-
-
+                float max = 0;
+                for (float f : res) {//find the max value on the list
+                    max = f > max ? f : max;
+                }
+                finres.add(max);//add the max value to the collections of MFD's
+                res = new ArrayList<>();//reset
+                // }
             }
-
-
         }
-
-
-        g.print();
-
-        System.out.println("poopy");
+        ctr = 0;
         for (float i : finres) {
 
-            System.out.println(i);
+            mfd[ctr] = ctr <= finres.size() ? i : 0;
+            ctr++;
         }
-
-
+        return mfd;
     }
 
     //  private void diameter(ShortestPathsTree)

@@ -64,7 +64,7 @@ public class GraphWriterTest {
     @org.junit.Test
     public void createVectorCreatesGraphWithCCorrectNumNodes() throws Exception {
 
-        graphWriter.create_feature(way4, "wibble");
+        //graphWriter.create_feature(way4, "wibble");
 
 
     }
