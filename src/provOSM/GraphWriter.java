@@ -5,25 +5,14 @@ import com.hendrix.erdos.graphs.*;
 import com.hendrix.erdos.types.Edge;
 import com.hendrix.erdos.types.IVertex;
 import com.hendrix.erdos.types.Vertex;
-import com.hendrix.erdos.utils.SVertexUtils;
 import org.openprovenance.prov.interop.InteropFramework;
 import org.openprovenance.prov.model.*;
 import org.openprovenance.prov.model.Activity;
-import org.openprovenance.prov.model.Agent;
 import org.openprovenance.prov.model.Document;
-import org.openprovenance.prov.model.Entity;
-import org.openprovenance.prov.model.ObjectFactory;
 import org.openprovenance.prov.model.ProvFactory;
 import org.openprovenance.prov.model.QualifiedName;
-import org.openprovenance.prov.model.WasAssociatedWith;
-import org.openprovenance.prov.model.WasAttributedTo;
-import org.openprovenance.prov.model.WasDerivedFrom;
-import org.openprovenance.prov.xml.*;
-import com.hendrix.erdos.*;
-import org.openrdf.query.algebra.Str;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * Created by baldy on 14/08/17.
@@ -79,13 +68,24 @@ public class GraphWriter {
     //}
 
 
+    public void buildVectorList() {
+
+        OSM_Way[][] item = mOSM_Extractor.getVersionedElements("k = building");
+
+
+        double[] outputvector = getVector(item[0], "wibble");
+
+
+    }
+
+
     /***
      *
      * @param versions an array of OSM_Primitive ordered by version
      * @param prefix unused - if we need to visualise we will use it to make PROV labels
-     * @return an int[] containing graph metrics
+     * @return a double[] containing graph metrics
      */
-    protected double[] create_feature(OSM_Primitive[] versions, String prefix) {
+    protected double[] getVector(OSM_Primitive[] versions, String prefix) {
         SimpleDirectedGraph graph = new SimpleDirectedGraph();//the subgraph
 
         ArrayList<String> agents = new ArrayList<>();
@@ -111,7 +111,7 @@ public class GraphWriter {
                 Vertex thisVertex = new Vertex(thisVertexTag);
                 graph.addVertex(thisVertex);
                 graph.addEdge(thisVertex, lastVertex);//create the edge
-                graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");//tag it with the prov relation
+                // graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");//tag it with the prov relation
                 // addUserAgent(graph, thisVertex, agents, p);
                 // addSoftwareAgent(graph, thisVertex, agents, p);
                 addEditSession(graph, thisVertex, addUserAgent(graph, thisVertex, agents, p), edits, swAgents, p);
@@ -126,7 +126,7 @@ public class GraphWriter {
                 Vertex thisVertex = new Vertex(thisVertexTag);
                 graph.addVertex(thisVertex);
                 graph.addEdge(thisVertex, lastVertex);
-                graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");
+                // graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");
                 // addUserAgent(graph, thisVertex, agents, p);//create an assign a user agent
                 //addSoftwareAgent(graph, thisVertex, agents, p);
                 addEditSession(graph, thisVertex, addUserAgent(graph, thisVertex, agents, p), edits, swAgents, p);
@@ -189,12 +189,45 @@ public class GraphWriter {
 
     }
 
+
     /***
-     * Convert a Directed graph into an undirected graph. Returns a new graph object cretad with the data of the parameter
+     * Convert a Directed graph into a bi directional dorected graph by adding an edge going in the other direction for every edge in the graph
      * @param dg SimpleDirectedGraph
+     * @return SimpleDirected graph
+     */
+    private SimpleDirectedGraph getBiDirectionalGraph(SimpleDirectedGraph dg) {
+
+        SimpleDirectedGraph sg = new SimpleDirectedGraph();
+
+        for (IVertex v : dg.vertices()) {//for every vertex in the old graph
+
+            Vertex nv = new Vertex(v.getTag());//make a new one with the same tag
+            sg.addVertex(nv);//add it to the new graph
+
+        }
+
+        for (Edge e : dg.edges()) {//for each edge in the old graph
+            Vertex SV = getVertexByTag(sg, e.getV1().getTag());//get the corresponding edges in the new one
+            Vertex EV = getVertexByTag(sg, e.getV2().getTag());
+
+            Edge ne = new Edge(SV, EV, Edge.EDGE_DIRECTION.DIRECTED,1.00f);
+            Edge ne2 = new Edge(EV, SV, Edge.EDGE_DIRECTION.DIRECTED,1.00f);
+            sg.addEdge(ne);
+            sg.addEdge(ne2);
+        }
+
+
+        return sg;
+
+    }
+
+    /***
+     *
+     * return a new undirected graph generated fro the contents of the argument
+     * @param dg a Directed Graph
      * @return SimpleGraph
      */
-    private SimpleGraph graphConvert(SimpleDirectedGraph dg) {
+    private SimpleGraph getUndirectedGraph(SimpleDirectedGraph dg) {
 
         SimpleGraph sg = new SimpleGraph();
 
@@ -209,14 +242,16 @@ public class GraphWriter {
             Vertex SV = getVertexByTag(sg, e.getV1().getTag());//get the corresponding edges in the new one
             Vertex EV = getVertexByTag(sg, e.getV2().getTag());
 
-            Edge ne = new Edge(SV, EV, Edge.EDGE_DIRECTION.UNDIRECTED);
+            Edge ne = new Edge(SV, EV, Edge.EDGE_DIRECTION.UNDIRECTED,1.00f);
+
             sg.addEdge(ne);
+
         }
-
-
         return sg;
-
     }
+
+
+
 
     /***
      * gets a vertex from a graph using its tag
@@ -245,7 +280,7 @@ public class GraphWriter {
         String[] nTypes = {"agent", "swAgent", "activity", "entity"};
         double[] mfd = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         int ctr = 0;
-        SimpleGraph g = graphConvert(graph);
+        SimpleDirectedGraph g = getBiDirectionalGraph(graph);//we need a graph that is effctively undirected so convert to a graph that has two vertices going each way
 
 
         for (String s : nTypes) {//for every string in the list of node types, use it as a source node s
@@ -258,11 +293,13 @@ public class GraphWriter {
 
                     for (IVertex vs : g.vertices()) {//look at each vertex
                         if (vs.getTag().contains(s)) {//is it is a source node
-                            ShortestPathsTree result = new DijkstraShortestPath(g).setStartVertex(vs).applyAlgorithm();//use it as the satrt not for the shortest path tree
-
-                            for (IVertex vd : graph.vertices()) {//then look a tag containing our non-matching string
+                            // ShortestPathsTree result = new DijkstraShortestPath(g).setStartVertex(vs).applyAlgorithm();//use it as the satrt not for the shortest path tree
+                            AllPairsShortPathResult result = (new FloydWarshall(g)).applyAlgorithm();
+                            for (IVertex vd : g.vertices()) {//then look a tag containing our non-matching string
                                 if (vd.getTag().contains(d)) { //we found one if it is our non matching destination
-                                    res.add(result.distanceOf(vd));//add its distance from the source to the list
+                                    float r = result.shortDistanceBetween(vs, vd);
+                                    res.add(r);
+                                    //res.add(result.distanceOf(vd));//add its distance from the source to the list
 
                                 }
                             }
@@ -271,12 +308,12 @@ public class GraphWriter {
                         }
                     }
 
-                    float min = 0;
+                   float max = 0;
 
                     for (float f : res) {
-                        min = f < min ? f : min;
+                        max = f > max ? f : max;
                     }
-                    finres.add(min);
+                    finres.add(max);
                     res = new ArrayList<>();
                 }
 
@@ -319,14 +356,14 @@ public class GraphWriter {
             agents.add(p.getUid());//store the agent id so we know we already made one
 
             Edge edge = new Edge(thisVertex, agentVertex, Edge.EDGE_DIRECTION.DIRECTED);//make an edge
-            edge.setTag("WasAttributedTo");//tag it
+            // edge.setTag("WasAttributedTo");//tag it
             graph.addEdge(edge);//add it to the graph
         } else {//else we made one
             for (IVertex v : graph.vertices()) {
                 if (v.getTag().equals("agent_" + p.getUid())) {
                     agentVertex = (Vertex) v;
                     Edge edge = new Edge(thisVertex, agentVertex, Edge.EDGE_DIRECTION.DIRECTED);//make an edge
-                    edge.setTag("WasAttributedTo");//tag it
+                    // edge.setTag("WasAttributedTo");//tag it
                     graph.addEdge(edge);//add it to the graph
                 }
             }
@@ -370,7 +407,7 @@ public class GraphWriter {
      */
     private void addSoftwareAgent(SimpleDirectedGraph graph, Vertex activityVertex, ArrayList<String> swAgents, OSM_Primitive p) {
         for (String[] tag : p.getTags()) {//for each tag in the primitives set of tags
-            if (tag[0].equals("created_by")) {//if the key is a 'created_by'...
+            if (tag[0].equals("k = created_by")) {//if the key is a 'created_by'...
                 if (!swAgents.contains(tag[1])) {///check if we already made an agent by looking for it on a list of ones we made. if not...
                     Vertex swAgentVertex = new Vertex("swAgent_" + tag[1]);//then make one
                     graph.addVertex(swAgentVertex);// add it to the graph

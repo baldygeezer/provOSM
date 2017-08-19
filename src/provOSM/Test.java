@@ -7,31 +7,23 @@ import java.util.ArrayList;
 import org.openprovenance.prov.interop.*;
 
 
-
-
 public class Test {
-	
-private final ProvFactory mPFactory;
-private final Namespace mNs;
 
-	
-	
-	
-	public Test(ProvFactory pFactory) {
+    private final ProvFactory mPFactory;
+    private final Namespace mNs;
+
+
+    public Test(ProvFactory pFactory) {
         this.mPFactory = pFactory;
-        mNs= new Namespace();
+        mNs = new Namespace();
         mNs.addKnownNamespaces();
         mNs.register("osm", "ploppy");
-        
-        
-	
-	}
-	
-	
-	
-	
 
-	public static void main(String[] args) {
+
+    }
+
+
+    public static void main(String[] args) {
 //		ArrayList<OSM_Way>ways; //=new ArrayList<OSM_Way>();
 //		OSM_Extractor ploppy=new OSM_Extractor("ptwdMiniTest.osm");
 //
@@ -41,10 +33,12 @@ private final Namespace mNs;
 //		}
 //
 
+        GraphWriter graphWriter = new GraphWriter(new OSM_Extractor("testfixture.osm"));
+        graphWriter.buildVectorList();
 
-	ProvWriter provWriter=new ProvWriter(new OSM_Extractor("testfixture.osm"));
-	provWriter.printDocumentToScreen();
+        //ProvWriter provWriter=new ProvWriter(new OSM_Extractor("testfixture.osm"));
+        //provWriter.printDocumentToScreen();
 
-	}
+    }
 
 }
