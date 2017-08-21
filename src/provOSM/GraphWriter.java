@@ -13,6 +13,8 @@ import org.openprovenance.prov.model.Document;
 import org.openprovenance.prov.model.ProvFactory;
 import org.openprovenance.prov.model.QualifiedName;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -38,7 +40,7 @@ public class GraphWriter {
     private final org.openprovenance.prov.xml.ObjectFactory oprov;
     private OSM_Extractor mOSM_Extractor;
 
-    public GraphWriter(OSM_Extractor osm_extractor) {
+    public GraphWriter(OSM_Extractor osm_extractor) throws IOException {
         //we still need the PROV Docs namespaces
         mNamespace = new Namespace();
         mNamespace.addKnownNamespaces();
@@ -140,7 +142,7 @@ public class GraphWriter {
 
 
         }
-        graph.print();
+       // graph.print();
 
         // maxFiniteDistance(graph);
         return analise(graph, flag);
@@ -155,15 +157,15 @@ public class GraphWriter {
 
         double[] mfd = maxFiniteDistance(graph);
         for (double d : mfd) {
-            features[ctr] = mfd[ctr];
+            features[ctr] = mfd[ctr-1];
             ctr++;
         }
 
 
         features[0] = flag ? 1 : 0;//the flag ,containing our target value (true for fix me tag)
-        features[16] = getDiam(graph);
-        features[17] = graph.numEdges();
-        features[18] = graph.numVertices();
+        features[17] = getDiam(graph);
+        features[18] = graph.numEdges();
+        features[19] = graph.numVertices();
 
 
         return features;
@@ -344,7 +346,7 @@ public class GraphWriter {
         ArrayList<Float> finres = new ArrayList<>();
         ArrayList<Float> res = new ArrayList<>();//stor the collections of min finite distances between node types
         String[] nTypes = {"agent", "swAgent", "activity", "entity"};
-        double[] mfd = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        double[] mfd = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0};
         int ctr = 0;
         SimpleDirectedGraph g = getBiDirectionalGraph(graph);//we need a graph that is effctively undirected so convert to a graph that has two vertices going each way
         for (String s : nTypes) {//for every string in the list of node types, use it as a source node s
@@ -479,7 +481,6 @@ public class GraphWriter {
     private void getActivities(OSM_Primitive p) {
         Activity activity;
         boolean activityExists = false;
-
         for (Activity a : mActivities) {
             if (a.getId().getLocalPart().equals(p.getChangeSet())) {
                 activityExists = true;
@@ -490,22 +491,36 @@ public class GraphWriter {
             activity = provFactory.newActivity(getQname(p.getChangeSet(), CHANGESET), "Map Edit");
             mActivities.add(activity);
         }
-
-
     }
 
 
     private String cleanForProvN_QName(String s) {
         return getTagValue(s).replace(" ", "");
     }
-
     private String getTagValue(String tag) {
-
-
         return tag.substring(tag.indexOf("=") + 2);
-
-
     }
+
+
+
+    private void writeDataToCSV(double[][] data){
+        try {
+
+
+            FileWriter writer = new FileWriter(mOSM_Extractor.OSMDATAPATH+"output.txt");
+
+
+
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
 
 
 }

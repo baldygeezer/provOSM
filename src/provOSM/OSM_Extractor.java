@@ -17,7 +17,7 @@ public class OSM_Extractor {
     private XMLEventReader mXMLEventReader;
     private String mInputFile;
     private String mOutPutFile;
-    private final String OSMDATAPATH = "data/";
+    protected final String OSMDATAPATH = "data/";
 
     /***
      * Extracts data from an OSH history file. Should work on OSM files

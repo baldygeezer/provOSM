@@ -55,6 +55,11 @@ public class GraphWriterTest {
 
     @Before
     public void setUp() throws Exception {
+        graphWriter=new GraphWriter(new OSM_Extractor("testfixture.osm"));
+
+
+
+
     }
 
     @After
@@ -66,6 +71,6 @@ public class GraphWriterTest {
 
         //graphWriter.create_feature(way4, "wibble");
 
-
+        assertTrue("poopy", graphWriter.getVector(way4,"wibble")[18]==2.0d);
     }
 }
