@@ -64,19 +64,19 @@ public class GraphWriter {
     }
 
 
-    // public runAnalysis(){
-    //   forea
-    //}
+    public ArrayList<double[]> buildVectorList() {
+        ArrayList<double[]> features = new ArrayList<>();
+        int ctr = 0;
 
+        OSM_Way[][] items = mOSM_Extractor.getVersionedElements();
 
-    public void buildVectorList() {
+        for (OSM_Way[] v : items) {
+            double[] outputvector = getVector(items[ctr], "wibble");
+            features.add(outputvector);
+            ctr++;
+        }
 
-        OSM_Way[][] item = mOSM_Extractor.getVersionedElements();
-
-
-        double[] outputvector = getVector(item[0], "wibble");
-
-
+        return features;
     }
 
 
@@ -155,10 +155,8 @@ public class GraphWriter {
             ctr++;
         }
         features[16] = getDiam(graph);
-        features[17]=graph.numEdges();
-        features[18]=graph.numVertices();
-
-
+        features[17] = graph.numEdges();
+        features[18] = graph.numVertices();
 
 
         return features;
@@ -166,22 +164,22 @@ public class GraphWriter {
 
 
     private float getDiam(SimpleDirectedGraph graph) {
-        SimpleDirectedGraph g =getBiDirectionalGraph(graph);//get a new graph that has bidirectional weighted edges
-        Vertex sv=null;//the start vertex
-        for(IVertex v:g.vertices()){//because it is a new instance we can use a start vertex from the original and must get a reference to the start of the new graph
-            if (v.getTag().contains("orig")){
-                sv=(Vertex)v;
+        SimpleDirectedGraph g = getBiDirectionalGraph(graph);//get a new graph that has bidirectional weighted edges
+        Vertex sv = null;//the start vertex
+        for (IVertex v : g.vertices()) {//because it is a new instance we can use a start vertex from the original and must get a reference to the start of the new graph
+            if (v.getTag().contains("orig")) {
+                sv = (Vertex) v;
                 break;
             }
         }
 
-      AllPairsShortPathResult result = AllPairsShortPathFactory.newAllPairsShortPath(g, AllPairsShortPathFactory.APSPAlgorithm.Johnson).applyAlgorithm();
+        AllPairsShortPathResult result = AllPairsShortPathFactory.newAllPairsShortPath(g, AllPairsShortPathFactory.APSPAlgorithm.Johnson).applyAlgorithm();
         //AllPairsShortPathResult result = new BellmanFordShortestPath(g)
         ArrayList<Float> paths = new ArrayList<>();
 
         for (IVertex v : g) {
 
-            if(!v.getTag().contains("orig")) {
+            if (!v.getTag().contains("orig")) {
 
                 paths.add(result.shortDistanceBetween(sv, v));
             }

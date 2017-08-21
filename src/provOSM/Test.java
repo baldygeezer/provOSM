@@ -34,8 +34,16 @@ public class Test {
 //
 
         GraphWriter graphWriter = new GraphWriter(new OSM_Extractor("testfixture.osm"));
-        graphWriter.buildVectorList();
+        ArrayList<double[]> results = graphWriter.buildVectorList();
+for (double[] d:results){
+    String s ="";
+    for (double a :d) {
+       String rstr=", "+a;
 
+        s+=rstr;
+    }
+    System.out.println(s);
+}
         //ProvWriter provWriter=new ProvWriter(new OSM_Extractor("testfixture.osm"));
         //provWriter.printDocumentToScreen();
 
