@@ -1,6 +1,7 @@
 package provOSM;
 
 import com.hendrix.erdos.algorithms.*;
+import com.hendrix.erdos.algorithms.factories.AllPairsShortPathFactory;
 import com.hendrix.erdos.graphs.*;
 import com.hendrix.erdos.types.Edge;
 import com.hendrix.erdos.types.IVertex;
@@ -87,7 +88,7 @@ public class GraphWriter {
      */
     protected double[] getVector(OSM_Primitive[] versions, String prefix) {
         SimpleDirectedGraph graph = new SimpleDirectedGraph();//the subgraph
-
+        Vertex originalVertex = null;
         ArrayList<String> agents = new ArrayList<>();
         ArrayList<String> edits = new ArrayList<>();
         ArrayList<String> swAgents = new ArrayList<>();
@@ -97,7 +98,7 @@ public class GraphWriter {
 
             //loops to make the derivations
             if (p.getVersion() == 1) {//make node for the original if we are on version 1
-                Vertex originalVertex = new Vertex(p.getId() + "entity_original");
+                originalVertex = new Vertex(p.getId() + "entity_original");
                 graph.addVertex(originalVertex);
                 //addUserAgent(graph, originalVertex, agents, p);
                 //addSoftwareAgent(graph, originalVertex, agents, p);
@@ -137,7 +138,7 @@ public class GraphWriter {
 
         }
         graph.print();
-        maxFiniteDistance(graph);
+        // maxFiniteDistance(graph);
         return analise(graph);
 
 
@@ -145,7 +146,7 @@ public class GraphWriter {
 
 
     private double[] analise(SimpleDirectedGraph graph) {
-        double[] features = new double[18];
+        double[] features = new double[19];
         int ctr = 0;
 
         double[] mfd = maxFiniteDistance(graph);
@@ -153,46 +154,80 @@ public class GraphWriter {
             features[ctr] = mfd[ctr];
             ctr++;
         }
+        features[16] = getDiam(graph);
+        features[17]=graph.numEdges();
+        features[18]=graph.numVertices();
+
+
 
 
         return features;
     }
 
+
+    private float getDiam(SimpleDirectedGraph graph) {
+        SimpleDirectedGraph g =getBiDirectionalGraph(graph);//get a new graph that has bidirectional weighted edges
+        Vertex sv=null;//the start vertex
+        for(IVertex v:g.vertices()){//because it is a new instance we can use a start vertex from the original and must get a reference to the start of the new graph
+            if (v.getTag().contains("orig")){
+                sv=(Vertex)v;
+                break;
+            }
+        }
+
+      AllPairsShortPathResult result = AllPairsShortPathFactory.newAllPairsShortPath(g, AllPairsShortPathFactory.APSPAlgorithm.Johnson).applyAlgorithm();
+        //AllPairsShortPathResult result = new BellmanFordShortestPath(g)
+        ArrayList<Float> paths = new ArrayList<>();
+
+        for (IVertex v : g) {
+
+            if(!v.getTag().contains("orig")) {
+
+                paths.add(result.shortDistanceBetween(sv, v));
+            }
+        }
+        float diameter = 0;
+
+        for (float f : paths) {
+            diameter = f > diameter ? f : diameter;
+        }
+        return diameter;
+    }
+
+
     private void getDiameter(SimpleDirectedGraph graph) {
         SimpleGraph g = getUndirectedGraph(graph);
         IVertex sv;
-        IVertex ev=null;
+        IVertex ev = null;
         int numentities = 0;
-        int ctr=1;
-        for (IVertex v : g.vertices()) {
+        int ctr = 1;
+        for (IVertex v : g.vertices()) {///find the original entity
             if (v.getTag().contains("original")) {
                 sv = v;
             }
         }
 
-        for (IVertex v : g.vertices()) {
+        for (IVertex v : g.vertices()) {///count the entities
             if (v.getTag().contains("entity")) {
                 numentities++;
             }
         }
-        for (IVertex v:g.vertices()) {
-            if(v.getTag().contains("original")){
-                if(ctr==numentities){
-                    ev=v;
+        for (IVertex v : g.vertices()) {
+            if (v.getTag().contains("original")) {
+                if (ctr == numentities) {
+                    ev = v;
                     ctr++;
                 }
 
             }
-    }
-        for (IVertex v:g.getNeighborsOf(ev)){
-            if(v.getTag().contains("swAgent")){
-                ev=v;
+        }
+        for (IVertex v : g.getNeighborsOf(ev)) {
+            if (v.getTag().contains("swAgent")) {
+                ev = v;
             }
         }
-    // just so you remember - now compute the path between sv and ev
+        // just so you remember - now compute the path between sv and ev
     }
-
-
 
 
     private double averageAgentInDegree(SimpleDirectedGraph graph) {
@@ -214,6 +249,8 @@ public class GraphWriter {
 
     /***
      * Convert a Directed graph into a bi directional dorected graph by adding an edge going in the other direction for every edge in the graph
+     * bi-diectiona graphs are used as a substitute for undirected graphs because the algorythmes need the graoh typeto be directed. For
+     * mfd we need a way of ignoring edge direction
      * @param dg SimpleDirectedGraph
      * @return SimpleDirected graph
      */
@@ -331,7 +368,7 @@ public class GraphWriter {
             }
         }
         ctr = 0;
-        for (float i : finres) {
+        for (float i : finres) {//erm silly man, you don't need to do this!
 
             mfd[ctr] = ctr <= finres.size() ? i : 0;
             ctr++;
@@ -339,15 +376,13 @@ public class GraphWriter {
         return mfd;
     }
 
-    //  private void diameter(ShortestPathsTree)
-
 
     /**
      * cretaes and assigns a useragent
      *
-     * @param graph
-     * @param thisVertex
-     * @param agents
+     * @param graph      a directed graph
+     * @param thisVertex the agentVertex that is being created
+     * @param agents     a list of useragent tages for agent already created
      * @param p
      * @return
      */
