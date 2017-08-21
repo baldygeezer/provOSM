@@ -62,7 +62,17 @@ ArrayList<OSM_Way> wayList=extractByTag(tag);
 return getVersions(wayList);
     }
 
+    /***
+     *
+     * Returns an array of arrays containing each version of  primitive elements having a specific tag
+     *
+     */
+    public OSM_Way[][] getVersionedElements(){
+        OSM_Way [][] vList;
+        ArrayList<OSM_Way> wayList=extractAll();
 
+        return getVersions(wayList);
+    }
 
 
     /***
@@ -216,8 +226,21 @@ return getVersions(wayList);
         }
 
         return taglist;
+    }
+
+    /**
+     *
+     *
+     * @return
+     */
+    public ArrayList<OSM_Way> extractAll() {
+
+        return extractWays();
 
     }
+
+
+
 
     /***
      * returns an array of arrays: each array in the list is a sorted list of each
