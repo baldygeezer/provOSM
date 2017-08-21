@@ -71,7 +71,7 @@ public class GraphWriter {
 
     public void buildVectorList() {
 
-        OSM_Way[][] item = mOSM_Extractor.getVersionedElements("k = building");
+        OSM_Way[][] item = mOSM_Extractor.getVersionedElements();
 
 
         double[] outputvector = getVector(item[0], "wibble");
