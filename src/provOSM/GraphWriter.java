@@ -93,6 +93,8 @@ public class GraphWriter {
         ArrayList<String> edits = new ArrayList<>();
         ArrayList<String> swAgents = new ArrayList<>();
         Vertex lastVertex = null;// the last vertex as the destination for the wasDerivedFrom edge
+       boolean flag=versions[versions.length-1].getFlag();
+
         for (OSM_Primitive p : versions) {
 
 
@@ -100,6 +102,7 @@ public class GraphWriter {
             if (p.getVersion() == 1) {//make node for the original if we are on version 1
                 originalVertex = new Vertex(p.getId() + "entity_original");
                 graph.addVertex(originalVertex);
+
                 //addUserAgent(graph, originalVertex, agents, p);
                 //addSoftwareAgent(graph, originalVertex, agents, p);
                 addEditSession(graph, originalVertex, addUserAgent(graph, originalVertex, agents, p), edits, swAgents, p);
@@ -138,22 +141,26 @@ public class GraphWriter {
 
         }
         graph.print();
+
         // maxFiniteDistance(graph);
-        return analise(graph);
+        return analise(graph, flag);
 
 
     }
 
 
-    private double[] analise(SimpleDirectedGraph graph) {
-        double[] features = new double[19];
-        int ctr = 0;
+    private double[] analise(SimpleDirectedGraph graph,boolean flag) {
+        double[] features = new double[20];
+        int ctr = 1; //start adding features at the second index, flag goes in first
 
         double[] mfd = maxFiniteDistance(graph);
         for (double d : mfd) {
             features[ctr] = mfd[ctr];
             ctr++;
         }
+
+
+        features[0] = flag ? 1 : 0;//the flag ,containing our target value (true for fix me tag)
         features[16] = getDiam(graph);
         features[17] = graph.numEdges();
         features[18] = graph.numVertices();
