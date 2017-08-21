@@ -11,7 +11,7 @@ import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-public class  OSM_Extractor {
+public class OSM_Extractor {
     private int ctr;
     private XMLInputFactory mXMLInputFactory;
     private XMLEventReader mXMLEventReader;
@@ -37,7 +37,7 @@ public class  OSM_Extractor {
             this.mXMLInputFactory = XMLInputFactory.newFactory();
             this.mXMLEventReader = mXMLInputFactory.createXMLEventReader(new FileReader(OSMDATAPATH + mInputFile));
             this.mInputFile = mInputFile;
-           // this.mOutPutFile = mOutPutFile;
+            // this.mOutPutFile = mOutPutFile;
 
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
@@ -55,11 +55,11 @@ public class  OSM_Extractor {
      * Returns an array of arrays containing each version of  primitive elements having a specific tag
      * @param tag
      */
-    public OSM_Way[][] getVersionedElements(String tag){
-OSM_Way [][] vList;
-ArrayList<OSM_Way> wayList=extractByTag(tag);
+    public OSM_Way[][] getVersionedElements(String tag) {
+        OSM_Way[][] vList;
+        ArrayList<OSM_Way> wayList = extractByTag(tag);
 
-return getVersions(wayList);
+        return getVersions(wayList);
     }
 
     /***
@@ -67,9 +67,9 @@ return getVersions(wayList);
      * Returns an array of arrays containing each version of  primitive elements having a specific tag
      *
      */
-    public OSM_Way[][] getVersionedElements(){
-        OSM_Way [][] vList;
-        ArrayList<OSM_Way> wayList=extractAll();
+    public OSM_Way[][] getVersionedElements() {
+        OSM_Way[][] vList;
+        ArrayList<OSM_Way> wayList = extractAll();
 
         return getVersions(wayList);
     }
@@ -78,7 +78,6 @@ return getVersions(wayList);
     /***
      * @// TODO: 18/07/2017 pull these methods togther into on method to get the versioned list form an OSM file! 
      */
-
 
 
     /**
@@ -96,6 +95,7 @@ return getVersions(wayList);
         ArrayList<OSM_Way> wayList = new ArrayList<>();
         boolean insideWayElement = false;// make a boolean to track whether the
         // parser is inside a Way element
+        boolean flag = false;//boolean to flag the element as a target feature
 
         try {
 
@@ -161,9 +161,10 @@ return getVersions(wayList);
 
                             if (i % 2 == 0) {
                                 tag[0] = tg.getName().toString() + " = " + tg.getValue();
-
+                                flag = tag[0].contains("fixme");//set whether or not there is a target feature
                             } else {
                                 tag[1] = tg.getName().toString() + " = " + tg.getValue();
+                                flag = tag[1].contains("fixme");//set whether or not there is a target feature
                                 i++;
                                 tags.add(tag);
                             }
@@ -189,7 +190,9 @@ return getVersions(wayList);
                     String[] nodes = new String[nodeList.size()];
                     nodeList.toArray(nodes);
 
-                    OSM_Way way = new OSM_Way(id, changeSet,  uid, userName, timeStamp, version, tags, nodes);
+                    OSM_Way way = new OSM_Way(id, changeSet, uid, userName, timeStamp, version, tags, nodes);
+                    way.setFlag(flag);
+
                     wayList.add(way);
                     insideWayElement = false;// set this to false to stop adding
                     // tags to the collection
@@ -217,9 +220,9 @@ return getVersions(wayList);
         ArrayList<OSM_Way> taglist = new ArrayList<>();
         ArrayList<OSM_Way> inputList = extractWays();
 
-        for (OSM_Way w:inputList){
-            for (String[] wl :w.getTags()) {
-                if(wl[0].equals(tagKey)){
+        for (OSM_Way w : inputList) {
+            for (String[] wl : w.getTags()) {
+                if (wl[0].equals(tagKey)) {
                     taglist.add(w);
                 }
             }
@@ -229,8 +232,6 @@ return getVersions(wayList);
     }
 
     /**
-     *
-     *
      * @return
      */
     public ArrayList<OSM_Way> extractAll() {
@@ -240,8 +241,6 @@ return getVersions(wayList);
     }
 
 
-
-
     /***
      * returns an array of arrays: each array in the list is a sorted list of each
      * version of a specific way this is horrible...
@@ -249,7 +248,7 @@ return getVersions(wayList);
      * @param pList
      * @return OSMPrimitive[][]
      */
-    protected OSM_Way[][] getVersions(ArrayList <OSM_Way> pList) {
+    protected OSM_Way[][] getVersions(ArrayList<OSM_Way> pList) {
         ArrayList<OSM_Way[]> versionsList = new ArrayList<>();// the array of arrays!
         ArrayList<OSM_Way> vList = new ArrayList<>();// a list to store the versions of each way
         String pId = pList.get(0).getId();// stores the id of an item, starting with the first...
@@ -261,8 +260,7 @@ return getVersions(wayList);
             if (p.getId().equals(pId) && p.getType().equals(type)) {// ...if the item id and type are the same values as the ones we have stored...
 
                 vList.add(p); // ...add the item to a list
-                if (ctr == pList.size())
-                {
+                if (ctr == pList.size()) {
                     prepareList(vList, versionsList);
                 }
 
