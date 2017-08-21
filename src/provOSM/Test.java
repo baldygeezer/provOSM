@@ -22,7 +22,9 @@ public class Test {
 
     }
 
+private void printResults(){
 
+}
     public static void main(String[] args) {
 //		ArrayList<OSM_Way>ways; //=new ArrayList<OSM_Way>();
 //		OSM_Extractor ploppy=new OSM_Extractor("ptwdMiniTest.osm");
