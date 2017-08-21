@@ -161,15 +161,16 @@ public class OSM_Extractor {
 
                             if (i % 2 == 0) {
                                 tag[0] = tg.getName().toString() + " = " + tg.getValue();
-                                flag = tag[0].contains("fixme");//set whether or not there is a target feature
+                                flag = tag[0].contains("fixme")|| tag[1].contains("fixme") ?true:flag;//set whether or not there is a target feature
                             } else {
                                 tag[1] = tg.getName().toString() + " = " + tg.getValue();
-                                flag = tag[1].contains("fixme");//set whether or not there is a target feature
+
                                 i++;
                                 tags.add(tag);
+
                             }
 
-
+                          // flag = ;//set whether or not there is a target feature
                             // tags.add(tg.getName().toString() + " = "+
                             // tg.getValue());
                         } // end for
