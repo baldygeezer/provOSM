@@ -2,6 +2,7 @@ package provOSM;
 
 import org.openprovenance.prov.model.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.openprovenance.prov.interop.*;
@@ -35,7 +36,12 @@ private void printResults(){
 //		}
 //
 
-        GraphWriter graphWriter = new GraphWriter(new OSM_Extractor("testfixture.osm"));
+        GraphWriter graphWriter = null;
+        try {
+            graphWriter = new GraphWriter(new OSM_Extractor("testfixture.osm"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         ArrayList<double[]> results = graphWriter.buildVectorList();
 for (double[] d:results){
     String s ="";
