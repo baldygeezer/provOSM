@@ -98,7 +98,9 @@ public class GraphWriter {
         Vertex lastVertex = null;// the last vertex as the destination for the wasDerivedFrom edge
         boolean flag = versions[versions.length - 1].getFlag();
 
+
         for (OSM_Primitive p : versions) {
+
 
 
             //loops to make the derivations
@@ -114,33 +116,45 @@ public class GraphWriter {
 
             }
             if (p.getVersion() == 2) { //if the version is 2 then it isn't the original and needs a wasDerivedFrom edge pointing at the original
-                String thisVertexTag = "entity_" + p.getId() + "_v" + p.getVersion();
-                Vertex thisVertex = new Vertex(thisVertexTag);
-                graph.addVertex(thisVertex);
-                graph.addEdge(thisVertex, lastVertex);//create the edge
-                // graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");//tag it with the prov relation
-                // addUserAgent(graph, thisVertex, agents, p);
-                // addSoftwareAgent(graph, thisVertex, agents, p);
-                addEditSession(graph, thisVertex, addUserAgent(graph, thisVertex, agents, p), edits, swAgents, p);
+                if(lastVertex!=null) {//if there is no V1 then we are dealing with an incomplete record so don't create a graph
 
-                lastVertex = thisVertex;//store the current vertex as the last one ready for next time round NOTE to self: DO THIS LAST!!
+                    String thisVertexTag = "entity_" + p.getId() + "_v" + p.getVersion();
+                    Vertex thisVertex = new Vertex(thisVertexTag);
+                    graph.addVertex(thisVertex);
+                    graph.addEdge(thisVertex, lastVertex);//create the edge
+                    // graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");//tag it with the prov relation
+                    // addUserAgent(graph, thisVertex, agents, p);
+                    // addSoftwareAgent(graph, thisVertex, agents, p);
+                    addEditSession(graph, thisVertex, addUserAgent(graph, thisVertex, agents, p), edits, swAgents, p);
 
+                    lastVertex = thisVertex;//store the current vertex as the last one ready for next time round NOTE to self: DO THIS LAST!!
+                }
             }
 
             if (p.getVersion() > 2) {//if the version >2 then we just create derivations form the last verion
-                String lastVertexTag = "entity_" + p.getId() + "_v" + (p.getVersion() - 1);
-                String thisVertexTag = "entity_" + p.getId() + "_v" + p.getVersion();
-                Vertex thisVertex = new Vertex(thisVertexTag);
-                graph.addVertex(thisVertex);
-                graph.addEdge(thisVertex, lastVertex);
-                // graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");
-                // addUserAgent(graph, thisVertex, agents, p);//create an assign a user agent
-                //addSoftwareAgent(graph, thisVertex, agents, p);
-                addEditSession(graph, thisVertex, addUserAgent(graph, thisVertex, agents, p), edits, swAgents, p);
-                lastVertex = thisVertex;
+               if (lastVertex != null) {//if we got here without making a last vertex then the record is incomplete so no graph
 
+
+                    String lastVertexTag = "entity_" + p.getId() + "_v" + (p.getVersion() - 1);
+                    String thisVertexTag = "entity_" + p.getId() + "_v" + p.getVersion();
+                    Vertex thisVertex = new Vertex(thisVertexTag);
+                    graph.addVertex(thisVertex);
+
+                    try {
+                        graph.addEdge(thisVertex, lastVertex);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                    // graph.getEdge(thisVertex, lastVertex).setTag("wasDerivedFrom");
+                    // addUserAgent(graph, thisVertex, agents, p);//create an assign a user agent
+                    //addSoftwareAgent(graph, thisVertex, agents, p);
+                    addEditSession(graph, thisVertex, addUserAgent(graph, thisVertex, agents, p), edits, swAgents, p);
+                    lastVertex = thisVertex;
+
+                }
             }
-
 
         }
         // graph.print();
