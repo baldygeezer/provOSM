@@ -96,7 +96,7 @@ public class OSM_Extractor {
         boolean insideWayElement = false;// make a boolean to track whether the
         // parser is inside a Way element
         boolean flag = false;//boolean to flag the element as a target feature
-
+        int waysFound = 0;
         try {
 
             while (mXMLEventReader.hasNext()) {// keep pulling events from the
@@ -113,6 +113,7 @@ public class OSM_Extractor {
                     // if the element is a Way we need to get its attributes and
                     // process it
                     if (qName.equals("way")) {
+                        waysFound++;
                         // make a new empty insance of the hashmap to store the
                         // attributes
                         attributeKeysValues = new HashMap<>();
@@ -161,7 +162,8 @@ public class OSM_Extractor {
 
                             if (i % 2 == 0) {
                                 tag[0] = tg.getName().toString() + " = " + tg.getValue();
-                                flag = tag[0].contains("fixme")|| tag[1].contains("fixme") ?true:flag;//set whether or not there is a target feature
+
+                                flag = tag[0].contains("fixme") || tag[1].contains("fixme") || tag[0].contains("FIXME") || tag[1].contains("FIXME")? true : flag;//set whether or not there is a target feature
                             } else {
                                 tag[1] = tg.getName().toString() + " = " + tg.getValue();
 
@@ -170,7 +172,7 @@ public class OSM_Extractor {
 
                             }
 
-                          // flag = ;//set whether or not there is a target feature
+                            // flag = ;//set whether or not there is a target feature
                             // tags.add(tg.getName().toString() + " = "+
                             // tg.getValue());
                         } // end for
@@ -206,7 +208,7 @@ public class OSM_Extractor {
             e.printStackTrace();
         }
         // System.out.println(nodeList.toArray()[2]);
-
+        System.out.println("Way versions found: " + waysFound);
         return wayList;
 
     }// end of method
@@ -283,6 +285,7 @@ public class OSM_Extractor {
         }
 
         OSM_Way[][] versions = versionsList.toArray(new OSM_Way[versionsList.size()][]);
+        System.out.println("processed " +versions.length + " ways");
         return versions;
     }
 
