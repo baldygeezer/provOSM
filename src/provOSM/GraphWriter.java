@@ -13,6 +13,7 @@ import org.openprovenance.prov.model.Document;
 import org.openprovenance.prov.model.ProvFactory;
 import org.openprovenance.prov.model.QualifiedName;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -95,7 +96,7 @@ public class GraphWriter {
         ArrayList<String> edits = new ArrayList<>();
         ArrayList<String> swAgents = new ArrayList<>();
         Vertex lastVertex = null;// the last vertex as the destination for the wasDerivedFrom edge
-       boolean flag=versions[versions.length-1].getFlag();
+        boolean flag = versions[versions.length - 1].getFlag();
 
         for (OSM_Primitive p : versions) {
 
@@ -142,7 +143,7 @@ public class GraphWriter {
 
 
         }
-       // graph.print();
+        // graph.print();
 
         // maxFiniteDistance(graph);
         return analise(graph, flag);
@@ -151,13 +152,13 @@ public class GraphWriter {
     }
 
 
-    private double[] analise(SimpleDirectedGraph graph,boolean flag) {
+    private double[] analise(SimpleDirectedGraph graph, boolean flag) {
         double[] features = new double[20];
         int ctr = 1; //start adding features at the second index, flag goes in first
 
         double[] mfd = maxFiniteDistance(graph);
         for (double d : mfd) {
-            features[ctr] = mfd[ctr-1];
+            features[ctr] = mfd[ctr - 1];
             ctr++;
         }
 
@@ -182,8 +183,9 @@ public class GraphWriter {
             }
         }
 
-        AllPairsShortPathResult result = AllPairsShortPathFactory.newAllPairsShortPath(g, AllPairsShortPathFactory.APSPAlgorithm.Johnson).applyAlgorithm();
+       // AllPairsShortPathResult result = AllPairsShortPathFactory.newAllPairsShortPath(g, AllPairsShortPathFactory.APSPAlgorithm.Johnson).applyAlgorithm();
         //AllPairsShortPathResult result = new BellmanFordShortestPath(g)
+        AllPairsShortPathResult result = (new FloydWarshall(g)).applyAlgorithm();
         ArrayList<Float> paths = new ArrayList<>();
 
         for (IVertex v : g) {
@@ -346,7 +348,7 @@ public class GraphWriter {
         ArrayList<Float> finres = new ArrayList<>();
         ArrayList<Float> res = new ArrayList<>();//stor the collections of min finite distances between node types
         String[] nTypes = {"agent", "swAgent", "activity", "entity"};
-        double[] mfd = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0};
+        double[] mfd = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         int ctr = 0;
         SimpleDirectedGraph g = getBiDirectionalGraph(graph);//we need a graph that is effctively undirected so convert to a graph that has two vertices going each way
         for (String s : nTypes) {//for every string in the list of node types, use it as a source node s
@@ -497,30 +499,42 @@ public class GraphWriter {
     private String cleanForProvN_QName(String s) {
         return getTagValue(s).replace(" ", "");
     }
+
     private String getTagValue(String tag) {
         return tag.substring(tag.indexOf("=") + 2);
     }
 
 
-
-    private void writeDataToCSV(double[][] data){
+   public void writeDataToCSV() {
         try {
 
-
-            FileWriter writer = new FileWriter(mOSM_Extractor.OSMDATAPATH+"output.txt");
-
-
+ArrayList<double[]>data=buildVectorList();
+            //  FileWriter writer = new FileWriter(mOSM_Extractor.OSMDATAPATH+"output.txt");
 
 
+            BufferedWriter buffWriter = new BufferedWriter(new FileWriter(mOSM_Extractor.OSMDATAPATH + "output.csv"));
+            StringBuilder strbuilder = new StringBuilder();
+            for (double[] da : data) {
+                int ctr=0;
+                for (double d : da) {
+
+                    strbuilder.append(d);
+                    if(ctr!=da.length-1)
+                    strbuilder.append(",");
+                    ctr++;
+                }
+                strbuilder.append("\n");
+            }
+
+
+            buffWriter.write(strbuilder.toString());
+            buffWriter.close();
 
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-
-
 
 
 }
