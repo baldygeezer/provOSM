@@ -182,6 +182,7 @@
         <nd ref="1740735290"/>
         <nd ref="1740735279"/>
         <nd ref="1740735278"/>
+        <tag k="note" v="fixme"/>
         <tag k="building" v="house"/>
         <tag k="addr:street" v="Portswood Road"/>
         <tag k="addr:housenumber" v="111"/>
