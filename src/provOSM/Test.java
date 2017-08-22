@@ -38,7 +38,7 @@ private void printResults(){
 
         GraphWriter graphWriter = null;
         try {
-            graphWriter = new GraphWriter(new OSM_Extractor("ptwdMiniTest.osm"));
+            graphWriter = new GraphWriter(new OSM_Extractor("projectData2.osm"));
         } catch (IOException e) {
             e.printStackTrace();
         }

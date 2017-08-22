@@ -208,7 +208,7 @@ public class OSM_Extractor {
             e.printStackTrace();
         }
         // System.out.println(nodeList.toArray()[2]);
-        System.out.println("Way versions found: " + waysFound);
+       // System.out.println("Way versions found: " + waysFound);
         return wayList;
 
     }// end of method
@@ -285,7 +285,7 @@ public class OSM_Extractor {
         }
 
         OSM_Way[][] versions = versionsList.toArray(new OSM_Way[versionsList.size()][]);
-        System.out.println("processed " +versions.length + " ways");
+      //  System.out.println("processed " +versions.length + " ways");
         return versions;
     }
 
