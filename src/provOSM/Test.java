@@ -38,23 +38,30 @@ private void printResults(){
 
         GraphWriter graphWriter = null;
         try {
-            graphWriter = new GraphWriter(new OSM_Extractor("testfixture.osm"));
+            graphWriter = new GraphWriter(new OSM_Extractor("ptwdMiniTest.osm"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ArrayList<double[]> results = graphWriter.buildVectorList();
-for (double[] d:results){
-    String s ="";
-    for (double a :d) {
-       String rstr=", "+a;
 
-        s+=rstr;
-    }
-    System.out.println(s);
-}
         //ProvWriter provWriter=new ProvWriter(new OSM_Extractor("testfixture.osm"));
         //provWriter.printDocumentToScreen();
 
+        graphWriter.writeDataToCSV();
+
+    }
+
+
+    private void printToScreen(GraphWriter graphWriter){
+        ArrayList<double[]> results = graphWriter.buildVectorList();
+        for (double[] d:results){
+            String s ="";
+            for (double a :d) {
+                String rstr=", "+a;
+
+                s+=rstr;
+            }
+            System.out.println(s);
+        }
     }
 
 }
