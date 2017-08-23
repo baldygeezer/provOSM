@@ -458,7 +458,7 @@ public class GraphWriter {
                     csVertex = v;
 
                 }
-            }//we finished looking through the vertices
+            }//we finished looking through the vertices. Add the agent ouside the loop to aviod concurrent modification exception
             addSoftwareAgent(graph, (Vertex) csVertex, swAgents, p);//now we have our activity we can associate it with a software agent
         }
     }
