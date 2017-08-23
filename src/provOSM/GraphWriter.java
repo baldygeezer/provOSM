@@ -344,7 +344,7 @@ public class GraphWriter {
 
         for (IVertex v : graph.vertices()) {
 
-            if (v.getTag().contains(tag)) {
+            if (v.getTag().equals(tag)) {//fix infinity bug
                 nv = (Vertex) v;
             }
         }
@@ -435,6 +435,8 @@ public class GraphWriter {
 
 
     private void addEditSession(SimpleDirectedGraph graph, Vertex thisVertex, Vertex agentVertex, ArrayList<String> edits, ArrayList<String> swAgents, OSM_Primitive p) {
+       IVertex csVertex=null;
+
         if (!edits.contains(p.getChangeSet())) {//if there is no matching changesetId on the list we havent already made one
             Vertex editVertex = new Vertex("activity_" + p.getChangeSet());
             graph.addVertex(editVertex);
@@ -447,14 +449,17 @@ public class GraphWriter {
 
         } else {//if we already have this changeset in the graph and just need to getit and addeg an edge to it
             for (IVertex v : graph.vertices()) {//look though the list of vertices in the graph
-                if (v.getTag().equals("activity_" + p.getChangeSet())) {
-                    Edge editEdge = new Edge(thisVertex, v, Edge.EDGE_DIRECTION.DIRECTED);//the wasGeneratedby edge version to changeset
-                    Edge userEdge = new Edge(v, agentVertex, Edge.EDGE_DIRECTION.DIRECTED);     //the wasassociateWith edge (to userAgent)
+               boolean needSWagent=false;
+                if (v.getTag().equals("activity_" + p.getChangeSet())) {//if it is the changeset we want
+                    Edge editEdge = new Edge(thisVertex, v, Edge.EDGE_DIRECTION.DIRECTED);//create the wasGeneratedby edge -version to changeset
+                    Edge userEdge = new Edge(v, agentVertex, Edge.EDGE_DIRECTION.DIRECTED);     //create the wasassociateWith edge (to userAgent)
                     graph.addEdge(editEdge);
                     graph.addEdge(userEdge);
-                    addSoftwareAgent(graph, (Vertex) v, swAgents, p);//now we have our activity we can associate it with a software agent
+                    csVertex = v;
+
                 }
-            }
+            }//we finished looking through the vertices
+            addSoftwareAgent(graph, (Vertex) csVertex, swAgents, p);//now we have our activity we can associate it with a software agent
         }
     }
 
@@ -480,8 +485,8 @@ public class GraphWriter {
                 } else {//if we did make one already
                     for (IVertex v : graph.vertices()) {//look for it in the graph
                         if (v.getTag().equals("swAgent_" + tag[1])) {///if we find it
-                            Vertex swAgentVertex = (Vertex) v;  //copy the reference for it
-                            graph.addEdge(activityVertex, swAgentVertex);//add a wasAssociated edge to it from the edit activity
+                           // Vertex swAgentVertex = (Vertex) v;  //copy the reference for it
+                            graph.addEdge(activityVertex, v);//add a wasAssociated edge to it from the edit activity
                         }
                     }
                 }

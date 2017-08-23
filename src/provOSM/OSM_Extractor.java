@@ -168,7 +168,10 @@ public class OSM_Extractor {
                                 tag[1] = tg.getName().toString() + " = " + tg.getValue();
 
                                 i++;
-                                tags.add(tag);
+
+
+
+                                tags.add(sanitiseTags(tag));
 
                             }
 
@@ -194,9 +197,11 @@ public class OSM_Extractor {
                     nodeList.toArray(nodes);
 
                     OSM_Way way = new OSM_Way(id, changeSet, uid, userName, timeStamp, version, tags, nodes);
+
                     way.setFlag(flag);
 
                     wayList.add(way);
+                    flag=false;//reset the fix me flag
                     insideWayElement = false;// set this to false to stop adding
                     // tags to the collection
                 }
@@ -212,6 +217,25 @@ public class OSM_Extractor {
         return wayList;
 
     }// end of method
+
+
+    /**
+     *
+     * quick and dirty fix for the potlatch bug!
+     * @param tag
+     * @return
+     */
+    private  String[] sanitiseTags( String[] tag){
+
+       if (tag[1].contains("Potlatch")){
+          tag[1]=tag[1].substring(0,16);
+        }
+
+        return  tag;
+    }
+
+
+
 
     /**
      * Method to return all the elements with a specific tag
